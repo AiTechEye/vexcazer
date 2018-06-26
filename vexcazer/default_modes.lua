@@ -1,0 +1,295 @@
+vexcazer.bot_use=function(itemstack, user, pos,dir,input)
+		local plus=1
+		local minus=-1
+		local param=0
+		dir = minetest.dir_to_facedir(dir)
+		if dir==1 then param=minetest.get_node({x=pos.x-1,y=pos.y,z=pos.z}).param2 end
+		if dir==3 then param=minetest.get_node({x=pos.x+1,y=pos.y,z=pos.z}).param2 end
+		if dir==0 then param=minetest.get_node({x=pos.x,y=pos.y,z=pos.z-1}).param2 end
+		if dir==2 then param=minetest.get_node({x=pos.x,y=pos.y,z=pos.z+1}).param2 end
+		local node={name=input.lazer,param2=param}
+		local p=pos
+		minetest.sound_play("vexcazer_lazer", {pos=p, gain=1.0, max_hear_distance=5})
+		for i=1,input.max_amount,1 do
+			vexcazer.lazer_damage(p,input)	
+			if vexcazer.place({pos=p,node=node},input)==true then
+				if dir==1 then p.x=p.x+plus end
+				if dir==3 then p.x=p.x+minus end
+				if dir==0 then p.z=p.z+plus end
+				if dir==2 then p.z=p.z+minus end
+			else
+				return false
+			end
+		end
+		return itemstack
+	end
+
+vexcazer.registry_mode({
+	wear_on_use=1,
+	wear_on_place=3,
+	name="PlaceDig xz",
+	info="Both using the stack and count on left\n\nUSE with blocks = place blocks\nUSE with blocks on a wall = place blocks backwards\nUSE without blocks = shoot lazer\nPLACE blocks or items = dig\nUSE with blocks, and a block\nis backside the pointed = use same rotation",
+	info_admin="\nAdmin/mod info, works in other modes\nPLACE when the left stack is empty = lazerwave",
+	info_mod="\nAdmin/mod info, works in other modes\nPLACE when the left stack is empty = lazerwave",
+
+	on_place=function(itemstack, user, pointed_thing,input)
+		if pointed_thing.type~="node" then return itemstack end
+		local pos=pointed_thing.under
+		local dir = minetest.dir_to_facedir(user:get_look_dir())
+		local count=user:get_inventory():get_stack("main", input.index-1):get_count()
+		if count==0 then return false end
+		minetest.sound_play("vexcazer_dig", {pos = user:getpos(), gain = 1.0, max_hear_distance = 5,})
+		for i=1,input.max_amount,1 do
+			if count>0 then	
+				if vexcazer.dig(pos,input)==false then
+					return itemstack
+				end
+				count=count-1
+			else
+				return itemstack
+			end
+			if dir==1 then pos.x=pos.x+1 end
+			if dir==3 then pos.x=pos.x-1 end
+			if dir==0 then pos.z=pos.z+1 end
+			if dir==2 then pos.z=pos.z-1 end
+		end
+		return itemstack
+	end,
+
+	on_use = function(itemstack, user, pointed_thing,input)
+		if pointed_thing.type~="node" then return itemstack end
+		local pos=pointed_thing.above
+		local plus=1
+		local minus=-1
+		local dir = minetest.dir_to_facedir(user:get_look_dir())
+
+		local n=minetest.registered_nodes[minetest.get_node(pointed_thing.under).name]
+
+		if n and n.buildable_to then
+			pos=pointed_thing.under
+		end
+		if pointed_thing.above.y==pointed_thing.under.y then
+			plus=-1 minus=1 
+		end
+		local param=0
+		local lazer=false
+		if dir==1 then param=minetest.get_node({x=pos.x-1,y=pos.y,z=pos.z}).param2 end
+		if dir==3 then param=minetest.get_node({x=pos.x+1,y=pos.y,z=pos.z}).param2 end
+		if dir==0 then param=minetest.get_node({x=pos.x,y=pos.y,z=pos.z-1}).param2 end
+		if dir==2 then param=minetest.get_node({x=pos.x,y=pos.y,z=pos.z+1}).param2 end
+		local name=user:get_inventory():get_stack("main", input.index-1):get_name()
+		local count=user:get_inventory():get_stack("main", input.index-1):get_count()
+		local node={name=name,param2=param}
+		local lazercount=0
+		if minetest.registered_nodes[name]==nil then
+			node.name=input.lazer
+			count=input.max_amount
+			lazer=true
+			minetest.sound_play("vexcazer_lazer", {pos =user:getpos(), gain = 1.0, max_hear_distance = 5,})
+		else
+			minetest.sound_play("vexcazer_place", {pos =user:getpos(), gain = 1.0, max_hear_distance = 5,})
+		end
+		for i=1,input.max_amount,1 do
+			if lazer then
+				vexcazer.lazer_damage(pos,input)	
+			end
+			if count<=0 then return false end
+			if vexcazer.place({pos=pos,node=node},input)==true then
+				count=count-1
+				if dir==1 then pos.x=pos.x+plus end
+				if dir==3 then pos.x=pos.x+minus end
+				if dir==0 then pos.z=pos.z+plus end
+				if dir==2 then pos.z=pos.z+minus end
+			else
+				if lazer then minetest.chat_send_player(input.user:get_player_name(),"<vexcazer> " ..lazercount) end
+				return false
+			end
+			lazercount=lazercount+1
+		end
+		if lazer then minetest.chat_send_player(input.user:get_player_name(),"<vexcazer> " ..lazercount) end
+		return itemstack
+	end
+})
+
+local replace=function(itemstack, user, pointed_thing,input)
+			if pointed_thing.type~="node" then return itemstack end
+			local pos=pointed_thing.under
+			local stack=user:get_inventory():get_stack("main", input.index-1):get_name()
+			local stack_count=user:get_inventory():get_stack("main",input.index-1):get_count()
+			local replace=user:get_inventory():get_stack("main", input.index+1):get_name()
+			local replace_count=user:get_inventory():get_stack("main", input.index+1):get_count()
+			local dir = minetest.dir_to_facedir(user:get_look_dir())
+			local lazer=false
+			local invert=false
+
+			if minetest.registered_nodes[stack]==nil then
+				stack="air"
+				stack_count=input.max_amount
+			end
+			if minetest.registered_nodes[replace]==nil then
+				replace=input.lazer
+				replace_count=input.max_amount
+				lazer=true
+				minetest.sound_play("vexcazer_lazer", {pos = user:getpos(), gain = 1.0, max_hear_distance = 5,})
+			end
+
+
+
+			if input.on_place then
+				invert=true
+				if lazer==false then minetest.sound_play("vexcazer_dig", {pos = user:getpos(), gain = 1.0, max_hear_distance =5,}) end
+			else
+				if lazer==false then minetest.sound_play("vexcazer_place", {pos = user:getpos(), gain = 1.0, max_hear_distance =5,}) end
+			end
+			if ((replace_count<stack_count and replace_count<input.max_amount)) and input.admin==false then
+				minetest.chat_send_player(input.user:get_player_name(),"You need more to repalce with (or empty slot = air)")
+				return false
+			end
+			for i=1,input.max_amount,1 do
+				if stack_count<=0 then return false end
+				if lazer then
+					vexcazer.lazer_damage(pos,input)
+				end
+				if vexcazer.replace({pos=pos, stack=stack,replace=replace,invert=invert},input)==true then
+					stack_count=stack_count-1
+					if dir==1 then pos.x=pos.x+1 end
+					if dir==3 then pos.x=pos.x-1 end
+					if dir==0 then pos.z=pos.z+1 end
+					if dir==2 then pos.z=pos.z-1 end
+				else
+					return false
+				end
+			end
+			return true
+		end
+vexcazer.registry_mode({
+	wear_on_use=1,
+	wear_on_place=2,
+	name="Replace xz",
+	info="USE using the stack and count on left and right\nPLACE using the stack and count on left\n\nUSE replace the left stack with the right\nPLACE dig evyerthing without the left stack",
+		on_use=replace,
+		on_place=replace
+})
+
+
+
+
+vexcazer.registry_mode({
+	wear_on_use=1,
+	wear_on_place=2,
+	name="PlaceDig y",
+	info="Both using the stack and count on left\n\nUSE with blocks = place upwards\nUSE with block on a celling = place downwards\nPLACE with blocks or items = dig downwards\nPLACE with blocks or items on a celling = dig upwards",
+
+	on_place=function(itemstack, user, pointed_thing,input)
+		if pointed_thing.type~="node" then return itemstack end
+		local pos=pointed_thing.under
+		minetest.sound_play("diplazer_dig", {pos = input.user:getpos(), gain = 1.0, max_hear_distance = 5,})
+		local stack_count=user:get_inventory():get_stack("main",input.index-1):get_count()
+		local plus=-1
+		if pointed_thing.above.y<pointed_thing.under.y then
+			plus=1
+		end
+		minetest.sound_play("vexcazer_dig", {pos = user:getpos(), gain = 1.0, max_hear_distance =5,})
+		for i=1,input.max_amount,1 do
+			if stack_count<=0 then return false end
+			if vexcazer.dig(pos,input)==true then
+				stack_count=stack_count-1
+				pos.y=pos.y+plus
+			else
+				return false
+			end
+		end
+		return true
+	end,
+
+
+	on_use = function(itemstack, user, pointed_thing,input)
+		if pointed_thing.type~="node" then return itemstack end
+		local pos=pointed_thing.above
+		if minetest.registered_nodes[minetest.get_node(pointed_thing.under).name].walkable==false and minetest.get_node(pointed_thing.under).name~="air" then
+			pos=pointed_thing.under
+		end
+		local stack=user:get_inventory():get_stack("main", input.index-1):get_name()
+		local stack_count=user:get_inventory():get_stack("main",input.index-1):get_count()
+		local plus=1
+		local lazer=false
+		local lazercount=0
+		if minetest.registered_nodes[stack]==nil then
+			stack=input.lazer
+			stack_count=input.max_amount
+			lazer=true
+			minetest.sound_play("vexcazer_lazer", {pos =user:getpos(), gain = 1.0, max_hear_distance = 5,})
+		else
+			minetest.sound_play("vexcazer_place", {pos = user:getpos(), gain = 1.0, max_hear_distance =5,})
+		end
+		if pointed_thing.under.y>pointed_thing.above.y then
+			plus=-1
+		end
+		for i=1,input.max_amount,1 do
+			if stack_count<=0 then return false end
+			if lazer then
+				vexcazer.lazer_damage(pos,input)
+			end
+			if vexcazer.place({pos=pos,node={name=stack}},input)==true then
+				stack_count=stack_count-1
+				pos.y=pos.y+plus
+			else
+				if lazer then minetest.chat_send_player(input.user:get_player_name(),"<vexcazer> " ..lazercount) end
+				return false
+			end
+			lazercount=lazercount+1
+		end
+		if lazer then minetest.chat_send_player(input.user:get_player_name(),"<vexcazer> " ..lazercount) end
+		return true
+	end
+})
+
+
+
+vexcazer.registry_mode({
+	wear_on_use=1,
+	name="Autoswith",
+	info="USE using all stacks and counts on\nthe hotbar until it hits a tool: from left to right",
+	on_use = function(itemstack, user, pointed_thing,input)
+		if pointed_thing.type~="node" then return itemstack end
+		local pos=pointed_thing.above
+		local max_amount=input.max_amount
+		local dir = minetest.dir_to_facedir(user:get_look_dir())
+		local plus=1
+		local minus=-1
+		minetest.sound_play("vexcazer_place", {pos = user:getpos(), gain = 1.0, max_hear_distance =5,})
+		if minetest.registered_nodes[minetest.get_node(pointed_thing.under).name].walkable==false and minetest.get_node(pointed_thing.under).name~="air" then
+			pos=pointed_thing.under
+		end
+		if pointed_thing.under.y==pointed_thing.above.y then
+			plus=-1
+			minus=1
+		end
+		for i=1,8,1 do
+			if max_amount<=0 then return false end
+			local stack=user:get_inventory():get_stack("main", i):get_name()
+			local stack_count=user:get_inventory():get_stack("main",i):get_count()
+			if stack=="" and i>1 then
+				stack=input.lazer
+				stack_count=1
+			elseif (i==1 and stack=="") or (stack~="" and minetest.registered_nodes[stack]==nil) then
+
+				return false
+			end
+			for i=1,stack_count,1 do
+				if max_amount<=0 then return false end
+				if vexcazer.place({pos=pos,node={name=stack}},input)==true then
+					if dir==1 then pos.x=pos.x+plus end
+					if dir==3 then pos.x=pos.x+minus end
+					if dir==0 then pos.z=pos.z+plus end
+					if dir==2 then pos.z=pos.z+minus end
+				else
+					max_amount=0
+					stack_count=0
+				end
+				max_amount=max_amount-1
+			end
+		end
+		return true
+	end
+})
