@@ -55,7 +55,7 @@ minetest.register_tool("vexcazer:default", {
 		if not vexcazer.enable_default then
 			itemstack:replace(nil) 
 			minetest.chat_send_player(user:get_player_name(),"<vexcazer> The tool is disabled")
-			minetest.sound_play("vexcazer_error", {pos = user:getpos(), gain = 1.0, max_hear_distance = 15})
+			minetest.sound_play("vexcazer_error", {pos = user:get_pos(), gain = 1.0, max_hear_distance = 15})
 			return itemstack
 		end
 		vexcazer.use(itemstack, user, pointed_thing,{
@@ -76,7 +76,7 @@ minetest.register_tool("vexcazer:default", {
 		if not vexcazer.enable_default then
 			itemstack:replace(nil) 
 			minetest.chat_send_player(user:get_player_name(),"<vexcazer> The tool is disabled")
-			minetest.sound_play("vexcazer_error", {pos = user:getpos(), gain = 1.0, max_hear_distance = 15})
+			minetest.sound_play("vexcazer_error", {pos = user:get_pos(), gain = 1.0, max_hear_distance = 15})
 			return itemstack
 		end
 		vexcazer.use(itemstack, user, pointed_thing,{

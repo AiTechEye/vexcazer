@@ -38,7 +38,7 @@ vexcazer.registry_mode({
 		local dir = minetest.dir_to_facedir(user:get_look_dir())
 		local count=user:get_inventory():get_stack("main", input.index-1):get_count()
 		if count==0 then return false end
-		minetest.sound_play("vexcazer_dig", {pos = user:getpos(), gain = 1.0, max_hear_distance = 5,})
+		minetest.sound_play("vexcazer_dig", {pos = user:get_pos(), gain = 1.0, max_hear_distance = 5,})
 		for i=1,input.max_amount,1 do
 			if count>0 then	
 				if vexcazer.dig(pos,input)==false then
@@ -85,9 +85,9 @@ vexcazer.registry_mode({
 			node.name=input.lazer
 			count=input.max_amount
 			lazer=true
-			minetest.sound_play("vexcazer_lazer", {pos =user:getpos(), gain = 1.0, max_hear_distance = 5,})
+			minetest.sound_play("vexcazer_lazer", {pos =user:get_pos(), gain = 1.0, max_hear_distance = 5,})
 		else
-			minetest.sound_play("vexcazer_place", {pos =user:getpos(), gain = 1.0, max_hear_distance = 5,})
+			minetest.sound_play("vexcazer_place", {pos =user:get_pos(), gain = 1.0, max_hear_distance = 5,})
 		end
 		for i=1,input.max_amount,1 do
 			if lazer then
@@ -130,16 +130,16 @@ local replace=function(itemstack, user, pointed_thing,input)
 				replace=input.lazer
 				replace_count=input.max_amount
 				lazer=true
-				minetest.sound_play("vexcazer_lazer", {pos = user:getpos(), gain = 1.0, max_hear_distance = 5,})
+				minetest.sound_play("vexcazer_lazer", {pos = user:get_pos(), gain = 1.0, max_hear_distance = 5,})
 			end
 
 
 
 			if input.on_place then
 				invert=true
-				if lazer==false then minetest.sound_play("vexcazer_dig", {pos = user:getpos(), gain = 1.0, max_hear_distance =5,}) end
+				if lazer==false then minetest.sound_play("vexcazer_dig", {pos = user:get_pos(), gain = 1.0, max_hear_distance =5,}) end
 			else
-				if lazer==false then minetest.sound_play("vexcazer_place", {pos = user:getpos(), gain = 1.0, max_hear_distance =5,}) end
+				if lazer==false then minetest.sound_play("vexcazer_place", {pos = user:get_pos(), gain = 1.0, max_hear_distance =5,}) end
 			end
 			if ((replace_count<stack_count and replace_count<input.max_amount)) and input.admin==false then
 				minetest.chat_send_player(input.user:get_player_name(),"You need more to repalce with (or empty slot = air)")
@@ -183,13 +183,13 @@ vexcazer.registry_mode({
 	on_place=function(itemstack, user, pointed_thing,input)
 		if pointed_thing.type~="node" then return itemstack end
 		local pos=pointed_thing.under
-		minetest.sound_play("diplazer_dig", {pos = input.user:getpos(), gain = 1.0, max_hear_distance = 5,})
+		minetest.sound_play("diplazer_dig", {pos = input.user:get_pos(), gain = 1.0, max_hear_distance = 5,})
 		local stack_count=user:get_inventory():get_stack("main",input.index-1):get_count()
 		local plus=-1
 		if pointed_thing.above.y<pointed_thing.under.y then
 			plus=1
 		end
-		minetest.sound_play("vexcazer_dig", {pos = user:getpos(), gain = 1.0, max_hear_distance =5,})
+		minetest.sound_play("vexcazer_dig", {pos = user:get_pos(), gain = 1.0, max_hear_distance =5,})
 		for i=1,input.max_amount,1 do
 			if stack_count<=0 then return false end
 			if vexcazer.dig(pos,input)==true then
@@ -218,9 +218,9 @@ vexcazer.registry_mode({
 			stack=input.lazer
 			stack_count=input.max_amount
 			lazer=true
-			minetest.sound_play("vexcazer_lazer", {pos =user:getpos(), gain = 1.0, max_hear_distance = 5,})
+			minetest.sound_play("vexcazer_lazer", {pos =user:get_pos(), gain = 1.0, max_hear_distance = 5,})
 		else
-			minetest.sound_play("vexcazer_place", {pos = user:getpos(), gain = 1.0, max_hear_distance =5,})
+			minetest.sound_play("vexcazer_place", {pos = user:get_pos(), gain = 1.0, max_hear_distance =5,})
 		end
 		if pointed_thing.under.y>pointed_thing.above.y then
 			plus=-1
@@ -257,7 +257,7 @@ vexcazer.registry_mode({
 		local dir = minetest.dir_to_facedir(user:get_look_dir())
 		local plus=1
 		local minus=-1
-		minetest.sound_play("vexcazer_place", {pos = user:getpos(), gain = 1.0, max_hear_distance =5,})
+		minetest.sound_play("vexcazer_place", {pos = user:get_pos(), gain = 1.0, max_hear_distance =5,})
 		if minetest.registered_nodes[minetest.get_node(pointed_thing.under).name].walkable==false and minetest.get_node(pointed_thing.under).name~="air" then
 			pos=pointed_thing.under
 		end

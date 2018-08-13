@@ -45,7 +45,7 @@ vexcazer.use=function(itemstack, user, pointed_thing,input)
 
 	if user:get_luaentity() then
 		local dir=user:get_look_dir()
-		local pos=user:getpos()
+		local pos=user:get_pos()
 		pos={x=pos.x+(dir.x)*2,y=pos.y+(dir.y)*2,z=pos.z+(dir.z)*2}
 		vexcazer.bot_use(itemstack, user, pos,dir,input)
 		return itemstack
@@ -124,14 +124,14 @@ vexcazer.use=function(itemstack, user, pointed_thing,input)
 					ob:set_hp(0)
 					ob:punch(user,1,{full_punch_interval=1,damage_groups={fleshy=9999}})
 				end
-				minetest.sound_play("vexcazer_lazer", {pos =ob:getpos(), gain = 1.0, max_hear_distance = 7,})	
+				minetest.sound_play("vexcazer_lazer", {pos =ob:get_pos(), gain = 1.0, max_hear_distance = 7,})	
 			end
 		else
 			if input.mod or input.default then
 				ob:punch(ob,1,{full_punch_interval=1,damage_groups={fleshy=10}})
-				minetest.sound_play("vexcazer_lazer", {pos =ob:getpos(), gain = 1.0, max_hear_distance = 7,})
+				minetest.sound_play("vexcazer_lazer", {pos =ob:get_pos(), gain = 1.0, max_hear_distance = 7,})
 			else
-				minetest.sound_play("vexcazer_lazer", {pos =ob:getpos(), gain = 1.0, max_hear_distance = 10,})
+				minetest.sound_play("vexcazer_lazer", {pos =ob:get_pos(), gain = 1.0, max_hear_distance = 10,})
 				ob:set_hp(0)
 				ob:punch(ob,1,{full_punch_interval=1,damage_groups={fleshy=9999}})
 			end
@@ -145,7 +145,7 @@ vexcazer.use=function(itemstack, user, pointed_thing,input)
 	end
 
 	if key.LMB and key.RMB and (input.admin or input.mod) then
-		local pos=user:getpos()
+		local pos=user:get_pos()
 		pointed_thing.under={x=pos.x,y=pos.y-1,z=pos.z}
 		pointed_thing.above={x=pos.x,y=pos.y-0.5,z=pos.z}
 		pointed_thing.type="node"
@@ -199,7 +199,7 @@ vexcazer.set_mode=function(input,itstack) -- {user,add,set,index}
 	item.metadata=minetest.serialize(meta)
 	item.meta=minetest.serialize(meta)
 	item.wear=wear
-	minetest.sound_play("vexcazer_mode", {pos=input.user:getpos(), gain = 2.0, max_hear_distance = 3,})
+	minetest.sound_play("vexcazer_mode", {pos=input.user:get_pos(), gain = 2.0, max_hear_distance = 3,})
 	minetest.chat_send_player(input.user:get_player_name(),"Mode" .. mode ..": " .. vexcazer.registry_modes[mode].name)
 	if itstack then
 		itstack:replace(item)
