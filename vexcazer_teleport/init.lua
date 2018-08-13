@@ -40,7 +40,7 @@ local teleport=function(itemstack, user, pointed_thing,input,object)
 		local tp2node1=minetest.registered_nodes[minetest.get_node({ x=pos.x, y=pos.y+1, z=pos.z}).name]
 		local tp2node2=minetest.registered_nodes[minetest.get_node({ x=pos.x, y=pos.y+2, z=pos.z}).name]
 		if (tp2node1.walkable==false and tp2node2.walkable==false)  then
-			if input.default and user:getpos().y<=pos.y then
+			if input.default and user:get_pos().y<=pos.y then
 				local walkable=0
 				local tp2node1=minetest.registered_nodes[minetest.get_node({ x=pos.x, y=pos.y, z=pos.z}).name].walkable==false
 				local tp2node2=minetest.registered_nodes[minetest.get_node({ x=pos.x+1, y=pos.y, z=pos.z}).name].walkable==false
@@ -73,15 +73,15 @@ local teleport=function(itemstack, user, pointed_thing,input,object)
 				user=ob
 			end
 
-			user:moveto({ x=pos.x, y=pos.y+1, z=pos.z },false)
-			minetest.sound_play("vexcazer_teleport", {pos = user:getpos(), gain = 1.0, max_hear_distance = 10,})
+			user:move_to({ x=pos.x, y=pos.y+1, z=pos.z },false)
+			minetest.sound_play("vexcazer_teleport", {pos = user:get_pos(), gain = 1.0, max_hear_distance = 10,})
 		else
 			if object and vexcazer.teleport[input.user_name] then
 				user=vexcazer.teleport[input.user_name].target
 				if user:is_player()==false then pointed_thing.above.y=pointed_thing.above.y+1 end
 			end
-			user:moveto(pointed_thing.above,false)
-			minetest.sound_play("vexcazer_teleport", {pos = user:getpos(), gain = 1.0, max_hear_distance = 10,})
+			user:move_to(pointed_thing.above,false)
+			minetest.sound_play("vexcazer_teleport", {pos = user:get_pos(), gain = 1.0, max_hear_distance = 10,})
 		end
 end
 

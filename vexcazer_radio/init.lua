@@ -34,7 +34,7 @@ local radio=function(itemstack, user, pointed_thing,input,selective)
 			if stack_count>input.max_amount*2 then
 				stack_count=input.max_amount*2
 
-				--minetest.sound_play("vexcazer_error", {pos = user:getpos(), gain = 1.0, max_hear_distance = 10,})
+				--minetest.sound_play("vexcazer_error", {pos = user:get_pos(), gain = 1.0, max_hear_distance = 10,})
 				--minetest.chat_send_player(input.user_name, "<vexcazer> Maximum count: " .. input.max_amount)
 				--return false
 			end
@@ -53,7 +53,7 @@ local radio=function(itemstack, user, pointed_thing,input,selective)
 						break
 					end
 					if i==32 then
-						minetest.sound_play("vexcazer_error", {pos = user:getpos(), gain = 1.0, max_hear_distance = 10,})
+						minetest.sound_play("vexcazer_error", {pos = user:get_pos(), gain = 1.0, max_hear_distance = 10,})
 						minetest.chat_send_player(input.user_name, "You need more blocks to place (will place: ".. allblocks .. " missing: " .. allblocks-stackcount .. ")")
 						return false
 					end
@@ -78,7 +78,7 @@ local radio=function(itemstack, user, pointed_thing,input,selective)
 							nfree=nfree+1
 							if tmpnfree<=0 then break end
 						end
-						minetest.sound_play("vexcazer_error", {pos = user:getpos(), gain = 1.0, max_hear_distance = 10,})
+						minetest.sound_play("vexcazer_error", {pos = user:get_pos(), gain = 1.0, max_hear_distance = 10,})
 						minetest.chat_send_player(input.user_name, "You need a more empty inventory to dig (will dig: ".. allblocks .. " need empty slots: " .. nfree .. ")")
 						return false
 					end
@@ -104,15 +104,15 @@ local radio=function(itemstack, user, pointed_thing,input,selective)
 
 			if dig then
 				if allblocks<1000 then
-					minetest.sound_play("vexcazer_massivedig", {pos = user:getpos(), gain = 1.0, max_hear_distance = 10,})
+					minetest.sound_play("vexcazer_massivedig", {pos = user:get_pos(), gain = 1.0, max_hear_distance = 10,})
 				else
-					minetest.sound_play("vexcazer_massive3ddig", {pos = user:getpos(), gain = 1.0, max_hear_distance = 15,})
+					minetest.sound_play("vexcazer_massive3ddig", {pos = user:get_pos(), gain = 1.0, max_hear_distance = 15,})
 				end
 			else
 				if allblocks<1000 then
-					minetest.sound_play("vexcazer_massiveplace", {pos = user:getpos(), gain = 1.0, max_hear_distance = 10,})
+					minetest.sound_play("vexcazer_massiveplace", {pos = user:get_pos(), gain = 1.0, max_hear_distance = 10,})
 				else
-					minetest.sound_play("vexcazer_massive3dplace", {pos = user:getpos(), gain = 1.0, max_hear_distance = 15,})
+					minetest.sound_play("vexcazer_massive3dplace", {pos = user:get_pos(), gain = 1.0, max_hear_distance = 15,})
 				end
 			end
 end

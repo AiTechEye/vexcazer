@@ -33,12 +33,12 @@ allow_metadata_inventory_put = function(pos, listname, index, stack, player)
 		local item=stack:get_name()
 		if player:get_player_name()~=meta:get_string("owner") then return 0 end
 		if listname=="tool" and (item=="vexcazer:default" or item=="vexcazer:controler") then
-			minetest.env:get_node_timer(pos):start(1)
+			minetest.get_node_timer(pos):start(1)
 			return 1
 		end
 		local name=stack:get_name()
 		if listname=="burn" and (name~="vexcazer:default" and name~="vexcazer:mod" and name~="vexcazer:admin" and name~="default:mese") then
-			minetest.env:get_node_timer(pos):start(1)
+			minetest.get_node_timer(pos):start(1)
 			return stack:get_count()
 		end
 		return 0

@@ -6,7 +6,7 @@ vexcazer.registry_mode({
 	wear_on_place=0,
 	disallow_damage_on_use=true,
 	on_place=function(itemstack, user, pointed_thing,input)
-		local pos=user:getpos()
+		local pos=user:get_pos()
 		if minetest.is_protected(pos, input.user_name) then
 			minetest.chat_send_player(input.user_name, "<vexcazer> Travel: this position is protected")
 			return
@@ -24,7 +24,7 @@ vexcazer.registry_mode({
 			minetest.chat_send_player(input.user_name, "<vexcazer> Travel: this position ".. spos .." is protected")
 			return
 		end
-		user:moveto(pos)
+		user:move_to(pos)
 	end,
 })
 
@@ -35,7 +35,7 @@ vexcazer.registry_mode({
 	wear_on_place=0,
 	disallow_damage_on_use=true,
 	on_place=function(itemstack, user, pointed_thing,input)
-		local pos=user:getpos()
+		local pos=user:get_pos()
 		if minetest.is_protected(pos, input.user_name) then
 			minetest.chat_send_player(input.user_name, "<vexcazer> Travel: this position is protected")
 			return
@@ -53,6 +53,6 @@ vexcazer.registry_mode({
 			minetest.chat_send_player(input.user_name, "<vexcazer> Travel: this position ".. spos .." is protected")
 			return
 		end
-		user:moveto(pos)
+		user:move_to(pos)
 	end,
 })

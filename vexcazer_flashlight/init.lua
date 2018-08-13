@@ -28,7 +28,7 @@ minetest.register_node("vexcazer_flashlight:flht", {
 	sunlight_propagates = true,
 	groups = {not_in_creative_inventory=1},
 	on_construct=function(pos)
-		minetest.env:get_node_timer(pos):start(1.5)
+		minetest.get_node_timer(pos):start(1.5)
 	end,
 	on_timer = function (pos, elapsed)
 		minetest.set_node(pos, {name="air"})
@@ -58,7 +58,7 @@ minetest.register_node("vexcazer_flashlight:flhtw", {
 	post_effect_color = {a = 103, r = 30, g = 60, b = 90},
 	groups = {water = 3, liquid = 3, puts_out_fire = 1,not_in_creative_inventory=1},
 	on_construct=function(pos)
-		minetest.env:get_node_timer(pos):start(1.5)
+		minetest.get_node_timer(pos):start(1.5)
 	end,
 	on_timer = function (pos, elapsed)
 		minetest.set_node(pos, {name="air"})
@@ -71,7 +71,7 @@ minetest.register_globalstep(function(dtime)
 		vexcazer_flashlight.timer=0
 		for i,ob in pairs(vexcazer_flashlight.users) do
 			local name=ob.player:get_inventory():get_stack("main", ob.slot):get_name()
-			local pos=ob.player:getpos()
+			local pos=ob.player:get_pos()
 			pos.y=pos.y+1.5
 			local n=minetest.get_node(pos).name
 			local light=minetest.get_node_light(pos)

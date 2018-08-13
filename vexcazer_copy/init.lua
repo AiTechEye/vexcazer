@@ -171,9 +171,9 @@ vexcazer_copy.copying=function(to_do,pos,input,stack_count,nodes2place,stack_cou
 		local c=((stack_count*stack_count)*stack_count)-nodes
 		minetest.chat_send_player(input.user_name,"<vexcazer> " .. c.. " nodes successfully placed")
 		if c<500 then
-			minetest.sound_play("vexcazer_massiveplace", {pos = input.user:getpos(), gain = 1.0, max_hear_distance = 10,})
+			minetest.sound_play("vexcazer_massiveplace", {pos = input.user:get_pos(), gain = 1.0, max_hear_distance = 10,})
 		else
-			minetest.sound_play("vexcazer_massive3dplace", {pos = input.user:getpos(), gain = 1.0, max_hear_distance = 10,})
+			minetest.sound_play("vexcazer_massive3dplace", {pos = input.user:get_pos(), gain = 1.0, max_hear_distance = 10,})
 		end
 		return true
 	end
@@ -181,9 +181,9 @@ vexcazer_copy.copying=function(to_do,pos,input,stack_count,nodes2place,stack_cou
 		local c=((stack_count*stack_count)*stack_count)-nodes
 		minetest.chat_send_player(input.user_name,"<vexcazer> " .. c.. " nodes successfully saved in the tool")
 		if c<500 then
-			minetest.sound_play("vexcazer_massivedig", {pos = input.user:getpos(), gain = 1.0, max_hear_distance = 10,})
+			minetest.sound_play("vexcazer_massivedig", {pos = input.user:get_pos(), gain = 1.0, max_hear_distance = 10,})
 		else
-			minetest.sound_play("vexcazer_massive3ddig", {pos = input.user:getpos(), gain = 1.0, max_hear_distance = 10,})
+			minetest.sound_play("vexcazer_massive3ddig", {pos = input.user:get_pos(), gain = 1.0, max_hear_distance = 10,})
 		end
 		return info
 	end
@@ -243,7 +243,7 @@ vexcazer_copy.copy=function(itemstack, user, pointed_thing,input)
 	if input.on_place then
 		info=vexcazer_copy.copying(1,pos,input,stack_count,nodes2place,stack_count2)
 		if not info then
-			minetest.sound_play("vexcazer_error", {pos = input.user:getpos(), gain = 1.0, max_hear_distance = 10,})
+			minetest.sound_play("vexcazer_error", {pos = input.user:get_pos(), gain = 1.0, max_hear_distance = 10,})
 			return
 		end
 		local info2=""
@@ -269,7 +269,7 @@ vexcazer_copy.copy=function(itemstack, user, pointed_thing,input)
 			num=num+1
 		end
 		if not vexcazer_copy.copying(2,pos,input,stack_count,info) then
-			minetest.sound_play("vexcazer_error", {pos = input.user:getpos(), gain = 1.0, max_hear_distance = 10,})
+			minetest.sound_play("vexcazer_error", {pos = input.user:get_pos(), gain = 1.0, max_hear_distance = 10,})
 			return false
 		end
 		vexcazer_copy.copying(3,pos,input,stack_count,info)

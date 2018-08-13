@@ -6,9 +6,9 @@ local nuke=function(itemstack, user, pointed_thing,input,a,g)
 	if pointed_thing.type=="node" then
 		pos=pointed_thing.under
 	elseif pointed_thing.type=="object" then
-		pos=pointed_thing.ref:getpos()
+		pos=pointed_thing.ref:get_pos()
 	else
-		pos=user:getpos()
+		pos=user:get_pos()
 	end
 	for i, ob in pairs(minetest.get_objects_inside_radius(pos, a)) do
 		if not (ob:is_player() and ob:get_player_name()==name) then
@@ -19,15 +19,15 @@ local nuke=function(itemstack, user, pointed_thing,input,a,g)
 	end
 	for i, ob in pairs(minetest.get_objects_inside_radius(pos, a)) do
 		if not (ob:is_player() and ob:get_player_name()==name) then
-			local pos2=ob:getpos()
+			local pos2=ob:get_pos()
 			local d=math.max(1,vector.distance(pos,pos2))
 			local dmg=(8/d)*a
 			if ob:get_luaentity() then
-				ob:setvelocity({x=(pos2.x-pos.x)*dmg, y=(pos2.y-pos.y)*dmg, z=(pos2.z-pos.z)*dmg})
+				ob:set_velocity({x=(pos2.x-pos.x)*dmg, y=(pos2.y-pos.y)*dmg, z=(pos2.z-pos.z)*dmg})
 			elseif ob:is_player() then
 				local d=dmg/4
 				local pos3={x=(pos2.x-pos.x)*d, y=(pos2.y-pos.y)*d, z=(pos2.z-pos.z)*d}
-				ob:setpos({x=pos.x+pos3.x,y=pos.y+pos3.y,z=pos.z+pos3.z,})
+				ob:set_pos({x=pos.x+pos3.x,y=pos.y+pos3.y,z=pos.z+pos3.z,})
 			end
 			c2=c2+1
 		end

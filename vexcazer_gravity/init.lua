@@ -1,6 +1,6 @@
 local vex_gravity=function(itemstack, user, pointed_thing,input)
 	local ob={}
-	local pos=user:getpos()
+	local pos=user:get_pos()
 	if user:get_attach() then return itemstack end
 
 	if pointed_thing.type=="object" then
@@ -22,14 +22,14 @@ local vex_gravity=function(itemstack, user, pointed_thing,input)
 		minetest.sound_play("vexcazer_mode", {pos=pos,max_hear_distance = 5, gain = 1})
 			target:set_detach()
 			if target:get_luaentity() then
-				target:setvelocity({x=0, y=-2, z=0})
-				target:setacceleration({x=0, y=-8, z=0})
+				target:set_velocity({x=0, y=-2, z=0})
+				target:set_acceleration({x=0, y=-8, z=0})
 			end
 
 			return itemstack
 		elseif target:get_luaentity() and target:get_luaentity().block
 		and ob:get_luaentity().user:get_player_name()==player_name then
-			local pos=ob:getpos()
+			local pos=ob:get_pos()
 			if minetest.registered_nodes[minetest.get_node(pos).name].walkable==false
 			and minetest.is_protected(pos,player_name)==false then
 			if minetest.registered_nodes[target:get_luaentity().drop] then
@@ -46,8 +46,8 @@ local vex_gravity=function(itemstack, user, pointed_thing,input)
 		end
 
 	if ob:get_luaentity().target:get_luaentity() and ob:get_luaentity().target:get_luaentity().itemstring then
-		ob:get_luaentity().target:setvelocity({x=0, y=-2, z=0})
-		ob:get_luaentity().target:setacceleration({x=0, y=-8, z=0})
+		ob:get_luaentity().target:set_velocity({x=0, y=-2, z=0})
+		ob:get_luaentity().target:set_acceleration({x=0, y=-8, z=0})
 		minetest.sound_play("vexcazer_mode", {pos=pos,max_hear_distance = 5, gain = 1})
 	end
 	return  itemstack
@@ -56,7 +56,7 @@ local vex_gravity=function(itemstack, user, pointed_thing,input)
 	if (not ob:get_attach()) and not (ob:get_luaentity() and ob:get_luaentity().ggunpower) then
 
 		if ob:is_player() and minetest.check_player_privs(input.user_name, {vexcazer=true})==false then
-			minetest.sound_play("vexcazer_error", {pos = user:getpos(), gain = 1.0, max_hear_distance = 10,})
+			minetest.sound_play("vexcazer_error", {pos = user:get_pos(), gain = 1.0, max_hear_distance = 10,})
 			minetest.chat_send_player(input.user_name, "<vexcazer> You is unallowed to hold players")
 			return false
 		end
@@ -64,7 +64,7 @@ local vex_gravity=function(itemstack, user, pointed_thing,input)
 		vexcazer_gravity_power.item=user:get_wielded_item():get_name():split(":")[2]
 		vexcazer_gravity_power.user=user
 		vexcazer_gravity_power.target=ob
-		local m=minetest.env:add_entity(ob:getpos(), "vexcazer_gravity:power")
+		local m=minetest.add_entity(ob:get_pos(), "vexcazer_gravity:power")
 		ob:set_attach(m, "", {x=0,y=0,z=0}, {x=0,y=0,z=0})
 		if user:get_player_control().RMB then m:right_click(user)
 
@@ -136,9 +136,9 @@ on_rightclick=function(self, clicker)
 			if self.target:get_luaentity() and self.target:get_luaentity().itemstring then
 				self.target:get_luaentity().age=vexcazer_gravity_item_time
 			end
-			local pos=self.object:getpos()
+			local pos=self.object:get_pos()
 			self.time=10
-			self.object:setvelocity({x=dir.x*45, y=dir.y*45, z=dir.z*45})
+			self.object:set_velocity({x=dir.x*45, y=dir.y*45, z=dir.z*45})
 			self.throw=1
 			self.time=0
 			if self.item~="gun3" then
@@ -155,8 +155,8 @@ on_step= function(self, dtime)
 	if self.throw==0 then
 		if self.user:get_wielded_item():get_name():find(self.item,8)==nil then
 			self.target:set_detach()
-			self.target:setvelocity({x=0, y=-2, z=0})
-			self.target:setacceleration({x=0, y=-8, z=0})
+			self.target:set_velocity({x=0, y=-2, z=0})
+			self.target:set_acceleration({x=0, y=-8, z=0})
 		end
 		if self.target==nil or (not self.target:get_attach()) then
 			self.object:set_hp(0)
@@ -164,7 +164,7 @@ on_step= function(self, dtime)
 			if self.sound then minetest.sound_stop(self.sound) end
 		end
 		local d=4
-		local pos = self.user:getpos()
+		local pos = self.user:get_pos()
 		if pos==nil then return self end
 
 		if self.user:get_hp()<1 then self.target:set_detach() end
@@ -182,31 +182,31 @@ on_step= function(self, dtime)
 		end
 
 		if minetest.registered_nodes[minetest.get_node(npos).name].walkable then
-			self.object:setvelocity({x=0,y=0,z=0})
+			self.object:set_velocity({x=0,y=0,z=0})
 			return self
 		end
 		if self.autoglitchfix then -- becaouse model sizes more then 200kb making it glitch >_<
-			self.object:moveto(npos)
+			self.object:move_to(npos)
 			return self
 		else
-			local ta=self.target:getpos()
+			local ta=self.target:get_pos()
 			if ta==nil then return self end
 			local v={x = (npos.x - ta.x)*4, y = (npos.y - ta.y)*4, z = (npos.z - ta.z)*4}
 			if npos.y - ta.y>2 or npos.y - ta.y<-3 then
 				self.time=0.1
 				self.autoglitchfix=1
-				self.object:setvelocity({x=0,y=0,z=0})
+				self.object:set_velocity({x=0,y=0,z=0})
 				return self
 			end
-			self.object:setvelocity(v)
+			self.object:set_velocity(v)
 		end
 	else
 		self.throw_timer=self.throw_timer+dtime
-		local v=self.object:getvelocity()
-		local pos=self.object:getpos()
+		local v=self.object:get_velocity()
+		local pos=self.object:get_pos()
 		for i, ob in pairs(minetest.get_objects_inside_radius(pos, 1.7)) do
 			if ((ob:is_player() and ob:get_player_name()~=self.user:get_player_name()) or (ob:get_luaentity() and ob:get_luaentity().ggunpower==nil)) and (not ob:get_attach()) then
-				local igpos=ob:getpos()
+				local igpos=ob:get_pos()
 				igpos=math.floor(igpos.x+igpos.y+igpos.z)
 				if igpos~=self.ignore then
 					self.ignore=igpos
@@ -219,18 +219,18 @@ on_step= function(self, dtime)
 							local a2=c[4]+c[5]+c[6]
 							if a1<a2 then a1=a2 end
 							if a1<=self.damage then
-							local objpos=ob:getpos()
+							local objpos=ob:get_pos()
 								vexcazer_gravity_power.item=self.item
 								vexcazer_gravity_power.user=self.user
 								vexcazer_gravity_power.target=ob
-								local m=minetest.env:add_entity(objpos, "vexcazer_gravity:power")
+								local m=minetest.add_entity(objpos, "vexcazer_gravity:power")
 								ob:set_attach(m, "", {x=0,y=0,z=0}, {x=0,y=0,z=0})
-								local v=self.object:getvelocity()
+								local v=self.object:get_velocity()
 								if minetest.get_node({x=objpos.x,y=objpos.y-1,z=objpos.z}).name~="air" then
-									m:moveto({x=objpos.x,y=objpos.y+0.2,z=objpos.z})
+									m:move_to({x=objpos.x,y=objpos.y+0.2,z=objpos.z})
 								end
 								local sv={x=v.x*0.9,y=v.y*0.9,z=v.z*0.9}
-								self.object:setvelocity(sv)
+								self.object:set_velocity(sv)
 								m:right_click(self.user)
 							end
 						end
@@ -252,8 +252,8 @@ on_step= function(self, dtime)
 		if self.throw_timer>=self.throw_time then
 			self.target:set_detach()
 			if self.target~=nil and self.target:get_luaentity() then
-				self.target:setvelocity({x=self.dir.x*25, y=self.dir.y*25, z=self.dir.z*25})
-				self.target:setacceleration({x=0, y=-8, z=0})
+				self.target:set_velocity({x=self.dir.x*25, y=self.dir.y*25, z=self.dir.z*25})
+				self.target:set_acceleration({x=0, y=-8, z=0})
 			end
 			self.object:set_hp(0)
 			self.object:punch(self.object,1,{full_punch_interval=1,damage_groups={fleshy=4}})
@@ -395,7 +395,7 @@ minetest.register_entity("vexcazer_gravity:block",{
 	makes_footstep_sound = false,
 	automatic_rotate = false,
 on_punch=function(self, puncher, time_from_last_punch, tool_capabilities, dir)
-		local pos=self.object:getpos()
+		local pos=self.object:get_pos()
 		if self.object:get_hp()==1 then
 			self.drop=""
 			self.timer=1
@@ -420,7 +420,7 @@ on_step= function(self, dtime)
 		if self.object:get_attach() then return self end
 		self.timer=0
 		self.timer2=self.timer2+1
-		local pos=self.object:getpos()
+		local pos=self.object:get_pos()
 		if self.timer2>10 then
 			self.object:set_hp(0)
 			self.object:punch(self.object,1,{full_punch_interval=1,damage_groups={fleshy=4}})
