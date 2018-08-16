@@ -78,7 +78,7 @@ end
 
 
 vexcazer_gravity_power={}
-vexcazer_gravity_item_time=tonumber(minetest.setting_get("item_entity_ttl"))
+vexcazer_gravity_item_time=tonumber(minetest.settings:get("item_entity_ttl"))
 if not vexcazer_gravity_item_time then
 	vexcazer_gravity_item_time=880
 else
@@ -443,3 +443,4 @@ vexcazer.registry_mode({
 	on_place=vex_gravity,
 	on_use=vex_gravity,
 })
+

@@ -1,4 +1,4 @@
-vexcazer={enable_default=false,gui="",auto_ad_mod=false,max_amount={default=10,mod=15,admin=30},wear_use=65535/1000,range={default=10,mod=15,admin=15},registry_modes={},creative=minetest.setting_get("creative_mode"),pvp=minetest.setting_getbool("enable_pvp")}
+vexcazer={enable_default=false,gui="",auto_ad_mod=false,max_amount={default=10,mod=15,admin=30},wear_use=65535/1000,range={default=10,mod=15,admin=15},registry_modes={},creative=minetest.settings:get("creative_mode"),pvp=minetest.settings:getbool("enable_pvp")}
 
 --if minetest.PLAYER_MAX_HP_DEFAULT then
 --	minetest.PLAYER_MAX_HP_DEFAULT=100
@@ -504,3 +504,4 @@ minetest.register_alias("vex_ad", "vexcazer:admin")
 minetest.register_alias("vex_mod", "vexcazer:mod")
 minetest.register_alias("vex_def", "vexcazer:default")
 minetest.register_alias("vex_con", "vexcazer:controler")
+
