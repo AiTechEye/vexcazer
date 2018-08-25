@@ -1,4 +1,4 @@
-vexcazer_con={jobs={},user={},max_admin=3000,max_mod=495,max_default=99,max_dis_admin=6,max_dis_mod=3,max_dis_default=2}
+vexcazer_con={jobs={},user={},max_dis=100000,dis_done=0,max_jobs_done=1000,jobs_done=0,max_world=30000,max_admin=3000,max_mod=495,max_default=99,max_dis_admin=6,max_dis_mod=3,max_dis_default=2}
 
 vexcazer_con.counter=function(a)
 	local b=0
@@ -9,8 +9,9 @@ vexcazer_con.counter=function(a)
 end
 
 vexcazer_con.run=function()
+	vexcazer_con.jobs_done=0
+	vexcazer_con.dis_done=0
 	for i, a in pairs(vexcazer_con.user) do
-
 		if not (a.name and a.count>1 and vexcazer_con.counter(a.jobs)>0) then
 			vexcazer_con.user[a.name]=nil
 			vexcazer_con.run()
@@ -18,7 +19,7 @@ vexcazer_con.run=function()
 		end
 
 		for xyz, pos in pairs(a.jobs) do
-			if os.clock()-a.time>5 then
+			if os.clock()-a.time>a.maxdelay then
 				minetest.chat_send_player(a.name, "<Vexcazer> using aborted, took more then 5 sec (" .. (os.clock()-a.time) ..")")
 				vexcazer_con.user[a.name]=nil
 				vexcazer_con.run()
@@ -41,11 +42,22 @@ vexcazer_con.run=function()
 				if minetest.get_node(n).name==a.node then
 					vexcazer_con.user[a.name].jobs[n.x .. "." .. n.y .."." ..n.z]=n
 				end
+				vexcazer_con.dis_done=vexcazer_con.dis_done+1
 			end
 			end
 			end
 			vexcazer_con.user[a.name].jobs[xyz]=nil
+			vexcazer_con.jobs_done=vexcazer_con.jobs_done+1
+
+			if vexcazer_con.jobs_done>vexcazer_con.max_jobs_done or vexcazer_con.dis_done>vexcazer_con.max_dis then
+				minetest.after(0.1, function()
+					vexcazer_con.run()
+					return
+				end)
+				return
+			end
 		end
+		vexcazer_con.dis_done=0
 		if vexcazer_con.counter(vexcazer_con.user[a.name].jobs)<1 then 
 			vexcazer_con.user[a.name]=nil
 			vexcazer_con.run()
@@ -53,8 +65,9 @@ vexcazer_con.run=function()
 		end
 	end
 	if vexcazer_con.counter(vexcazer_con.user)>0 then
-
-	minetest.after((0.1), function()
+	vexcazer_con.jobs_done=0
+	vexcazer_con.dis_done=0
+	minetest.after(0.1, function()
 		vexcazer_con.run()
 		return
 	end)
@@ -75,10 +88,13 @@ vexcazer.registry_mode({
 		if pointed_thing.type~="node" then return itemstack end
 		local count=user:get_inventory():get_stack("main", input.index-1):get_count()
 		local dis=user:get_inventory():get_stack("main", input.index+1):get_count()
+		local maxdelay=5
 		if count==0 then
 			count=9
-		elseif count>input.max_amount then
-			if input.admin then 
+		elseif count>=input.max_amount then
+			if input.world then
+				count=vexcazer_con.max_world
+			elseif input.admin then 
 				count=vexcazer_con.max_admin
 			elseif input.mod then
 				count=vexcazer_con.max_mod
@@ -86,10 +102,13 @@ vexcazer.registry_mode({
 				count=vexcazer_con.max_default
 			end
 		end
+
+		if input.world then
+			maxdelay=30
+		end
+
 		dis=dis+1
-		--if dis==0 then
-		--	dis=1
-		--else
+
 		if input.admin and dis>vexcazer_con.max_dis_admin then 
 			dis=vexcazer_con.max_dis_admin
 		elseif input.mod and dis>vexcazer_con.max_dis_mod then
@@ -115,7 +134,7 @@ vexcazer.registry_mode({
 			return
 		end
 
-		vexcazer_con.user[name]={time=os.clock(),node=node,input=input,count=count,dis=dis,name=name,jobs={}}
+		vexcazer_con.user[name]={maxdelay=maxdelay,time=os.clock(),node=node,input=input,count=count,dis=dis,name=name,jobs={}}
 		vexcazer_con.user[name].jobs[pos.x .."." .. pos.y .."." ..pos.z]=pos
 		vexcazer_con.run()
 		return itemstack
@@ -126,15 +145,21 @@ vexcazer.registry_mode({
 		local count=user:get_inventory():get_stack("main", input.index-1):get_count()
 		local item=user:get_inventory():get_stack("main", input.index-1):get_name()
 		local dis=user:get_inventory():get_stack("main", input.index+1):get_count()
-
+		local maxdelay=5
 		if not minetest.registered_nodes[item] then
-			item=input.lazer
+			if input.world then
+				item="air"
+			else
+				item=input.lazer
+			end
 		end
 
 		if count==0 then
 			count=9
-		elseif count>input.max_amount then
-			if input.admin then 
+		elseif count>=input.max_amount then
+			if input.world then
+				count=vexcazer_con.max_world
+			elseif input.admin then
 				count=vexcazer_con.max_admin
 			elseif input.mod then
 				count=vexcazer_con.max_mod
@@ -142,10 +167,13 @@ vexcazer.registry_mode({
 				count=vexcazer_con.max_default
 			end
 		end
+
+		if input.world then
+			maxdelay=30
+		end
+
 		dis=dis+1
-		--if dis==0 then
-		--	dis=1
-		--else
+
 		if input.admin and dis>vexcazer_con.max_dis_admin then 
 			dis=vexcazer_con.max_dis_admin
 		elseif input.mod and dis>vexcazer_con.max_dis_mod then
@@ -166,7 +194,7 @@ vexcazer.registry_mode({
 			vexcazer_con.user[name].count=0
 			return
 		end
-		vexcazer_con.user[name]={time=os.clock(),node=node,input=input,count=count,dis=dis,name=name,place={name=item},nolazer=true,jobs={}}
+		vexcazer_con.user[name]={maxdelay=maxdelay,time=os.clock(),node=node,input=input,count=count,dis=dis,name=name,place={name=item},nolazer=true,jobs={}}
 		vexcazer_con.user[name].jobs[pos.x .."." .. pos.y .."." ..pos.z]=pos
 		vexcazer_con.run()
 		return itemstack

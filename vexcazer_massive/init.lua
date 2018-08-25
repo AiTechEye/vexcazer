@@ -19,12 +19,17 @@ local massive=function(itemstack, user, pointed_thing,input)
 			if dig==false and minetest.registered_nodes[stack]==nil or stack_count==0 then return false end
 			if stack_count_left==0 then stack_count_left=stack_count end
 			if dig then pos=pointed_thing.under end
+
 			input.max_amount=vexcazer.round(input.max_amount/2)
-			if stack_count_left>input.max_amount then stack_count_left=stack_count end
+			if stack_count_left>input.max_amount then
+				stack_count_left=input.max_amount
+			end
+
 			if stack_count>input.max_amount then 
-				minetest.sound_play("vexcazer_error", {pos = user:get_pos(), gain = 1.0, max_hear_distance = 10,})
+				stack_count=input.max_amount
+				--minetest.sound_play("vexcazer_error", {pos = user:get_pos(), gain = 1.0, max_hear_distance = 10,})
 				minetest.chat_send_player(input.user_name, "<vexcazer> Maximum count: " .. input.max_amount)
-				return false
+				--return false
 			end
 
 			local allblocks=(stack_count*stack_count)*stack_count_left

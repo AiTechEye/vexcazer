@@ -10,31 +10,49 @@ local nuke=function(itemstack, user, pointed_thing,input,a,g)
 	else
 		pos=user:get_pos()
 	end
-	for i, ob in pairs(minetest.get_objects_inside_radius(pos, a)) do
-		if not (ob:is_player() and ob:get_player_name()==name) then
-			ob:set_hp(0)
-			ob:punch(ob,1,{full_punch_interval=1,damage_groups={fleshy=9000}})
-			c=c+1
-		end
-	end
-	for i, ob in pairs(minetest.get_objects_inside_radius(pos, a)) do
-		if not (ob:is_player() and ob:get_player_name()==name) then
-			local pos2=ob:get_pos()
-			local d=math.max(1,vector.distance(pos,pos2))
-			local dmg=(8/d)*a
-			if ob:get_luaentity() then
-				ob:set_velocity({x=(pos2.x-pos.x)*dmg, y=(pos2.y-pos.y)*dmg, z=(pos2.z-pos.z)*dmg})
-			elseif ob:is_player() then
-				local d=dmg/4
-				local pos3={x=(pos2.x-pos.x)*d, y=(pos2.y-pos.y)*d, z=(pos2.z-pos.z)*d}
-				ob:set_pos({x=pos.x+pos3.x,y=pos.y+pos3.y,z=pos.z+pos3.z,})
+
+	if input.world then
+		for i, ob in pairs(minetest.get_objects_inside_radius(pos, 500)) do
+			if not (ob:is_player() and ob:get_player_name()==name) then
+
+				if ob:is_player() then
+					ob:set_hp(0)
+				else
+					ob:remove()
+				end
+					c=c+1
 			end
-			c2=c2+1
 		end
+		minetest.chat_send_player(name, "<Vexcazer> removed objects: " .. c)
+	else
+
+		for i, ob in pairs(minetest.get_objects_inside_radius(pos, a)) do
+			if not (ob:is_player() and ob:get_player_name()==name) then
+				ob:set_hp(0)
+				ob:punch(ob,1,{full_punch_interval=1,damage_groups={fleshy=9000}})
+				c=c+1
+			end
+		end
+		for i, ob in pairs(minetest.get_objects_inside_radius(pos, a)) do
+			if not (ob:is_player() and ob:get_player_name()==name) then
+				local pos2=ob:get_pos()
+				local d=math.max(1,vector.distance(pos,pos2))
+				local dmg=(8/d)*a
+				if ob:get_luaentity() then
+					ob:set_velocity({x=(pos2.x-pos.x)*dmg, y=(pos2.y-pos.y)*dmg, z=(pos2.z-pos.z)*dmg})
+				elseif ob:is_player() then
+					local d=dmg/4
+					local pos3={x=(pos2.x-pos.x)*d, y=(pos2.y-pos.y)*d, z=(pos2.z-pos.z)*d}
+					ob:set_pos({x=pos.x+pos3.x,y=pos.y+pos3.y,z=pos.z+pos3.z,})
+				end
+				c2=c2+1
+			end
+		end
+		if c<0 then c=0 end
+		minetest.chat_send_player(name, "<Vexcazer> punched objects: " .. c .." pushed objects: " .. c2)
 	end
-	if c<0 then c=0 end
-	minetest.chat_send_player(name, "<Vexcazer> punched objects: " .. c .." pushed objects: " .. c2)
 	minetest.sound_play("vexcazer_nuke", {pos=pos, gain = g, max_hear_distance = a})
+
 end
 
 
