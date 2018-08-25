@@ -1,4 +1,4 @@
-vexcazer={enable_default=false,gui="",auto_ad_mod=false,max_amount={default=10,mod=15,admin=30},wear_use=65535/1000,range={default=10,mod=15,admin=15},registry_modes={},creative=minetest.settings:get("creative_mode"),pvp=minetest.settings:getbool("enable_pvp")}
+vexcazer={enable_default=false,gui="",auto_ad_mod=false,max_amount={default=10,mod=15,admin=30,world=99},wear_use=65535/1000,range={default=10,mod=15,admin=15},registry_modes={},creative=minetest.settings:get("creative_mode"),pvp=minetest.settings:get_bool("enable_pvp")}
 
 --if minetest.PLAYER_MAX_HP_DEFAULT then
 --	minetest.PLAYER_MAX_HP_DEFAULT=100
@@ -15,7 +15,7 @@ minetest.register_chatcommand("vexcazer", {
 	params = "",
 	description = "Vexcazer info",
 	func = function(name, param)
-		local version="8"
+		local version="9"
 		local info={version=version,modes=0,functions=0,text=""}
 		for i, func in pairs(vexcazer.registry_modes) do
 			info.modes=i
@@ -132,8 +132,13 @@ vexcazer.use=function(itemstack, user, pointed_thing,input)
 				minetest.sound_play("vexcazer_lazer", {pos =ob:get_pos(), gain = 1.0, max_hear_distance = 7,})
 			else
 				minetest.sound_play("vexcazer_lazer", {pos =ob:get_pos(), gain = 1.0, max_hear_distance = 10,})
-				ob:set_hp(0)
-				ob:punch(ob,1,{full_punch_interval=1,damage_groups={fleshy=9999}})
+
+				if input.world and ob:get_luaentity() then
+					ob:remove()
+				else
+					ob:set_hp(0)
+					ob:punch(ob,1,{full_punch_interval=1,damage_groups={fleshy=9999}})
+				end
 			end
 		end
 	end
@@ -504,4 +509,3 @@ minetest.register_alias("vex_ad", "vexcazer:admin")
 minetest.register_alias("vex_mod", "vexcazer:mod")
 minetest.register_alias("vex_def", "vexcazer:default")
 minetest.register_alias("vex_con", "vexcazer:controler")
-

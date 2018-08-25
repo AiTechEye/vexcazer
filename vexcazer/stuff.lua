@@ -7,18 +7,9 @@ minetest.register_privilege("vexcazer_ad", {
 	give_to_singleplayer= false,
 })
 
---minetest.register_abm({
---	nodenames = {"group:vex_lazer" },
---	interval = 1,
---	chance = 2,
---	action = function(pos, node, active_object_count, active_object_count_wider)
---	minetest.set_node(pos, {name="air"})
---	end,
---})
-
-local colors={"FFFFFFFA","FF0000FA","ff009cFA"}
-local colora={{255,255,255} ,{255,0,0} ,{255,0,170}}
-for i=1,3,1 do
+local colors={"FFFFFFFA","FF0000FA","ff009cFA","ff7700FA"}
+local colora={{255,255,255} ,{255,0,0} ,{255,0,170},{255,119,0}}
+for i=1,4,1 do
 minetest.register_node("vexcazer:lazer" ..i, {
 	description = "Lazer",
 	drawtype="glasslike",
@@ -164,6 +155,45 @@ minetest.register_tool("vexcazer:admin", {
 		user_name=user:get_player_name(),
 		index=user:get_wield_index(),
 		lazer="vexcazer:lazer3"
+		})
+		return itemstack
+	end,
+})
+
+minetest.register_tool("vexcazer:world", {
+	description = "Vexcazer world",
+	range = vexcazer.range.admin,
+	inventory_image = "vexcazer_rifle_world.png",
+	groups = {not_in_creative_inventory=1},
+	on_use = function(itemstack, user, pointed_thing)
+		vexcazer.use(itemstack, user, pointed_thing,{
+		default=false,
+		mod=false,
+		admin=true,
+		world=true,
+		max_amount=vexcazer.max_amount.world,
+		on_use=true,
+		on_place=false,
+		user=user,
+		user_name=user:get_player_name(),
+		index=user:get_wield_index(),
+		lazer="vexcazer:lazer4"
+		})
+		return itemstack
+	end,
+	on_place=function(itemstack, user, pointed_thing)
+		vexcazer.use(itemstack, user, pointed_thing,{
+		default=false,
+		mod=false,
+		admin=true,
+		world=true,
+		max_amount=vexcazer.max_amount.world,
+		on_use=false,
+		on_place=true,
+		user=user,
+		user_name=user:get_player_name(),
+		index=user:get_wield_index(),
+		lazer="vexcazer:lazer4"
 		})
 		return itemstack
 	end,

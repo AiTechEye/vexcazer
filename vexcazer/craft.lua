@@ -1,7 +1,9 @@
 minetest.register_craftitem("vexcazer:item", {
 	description = "Item",
+	stack_max=30000,
 	inventory_image = "vexcazer_controler.png",
 	groups = {not_in_creative_inventory=1}})
+
 minetest.register_node("vexcazer:block", {
 	description = "Block",
 	tiles = {"default_cloud.png^[colorize:#19ffd6FF"},
