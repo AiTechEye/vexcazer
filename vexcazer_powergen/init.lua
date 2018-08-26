@@ -16,13 +16,14 @@ after_place_node = function(pos, placer, itemstack)
 		local inv = meta:get_inventory()
 		meta:set_string("owner", placer:get_player_name())
 		meta:set_int("power", 0)
-		inv:set_size("burn", 1)
+		inv:set_size("burn", 16)
 		inv:set_size("tool", 1)
 		meta:set_string("infotext", "vex power generator (" .. placer:get_player_name() .. ")")
 		meta:set_string("formspec",
 		"size[8,9]" ..
 		"list[context;tool;3.5,1;1,1;]" ..
-		"list[context;burn;3.5,3;6,1;]" ..
+		--"list[context;burn;3.5,3;6,1;]" ..
+		"list[context;burn;0,2.5;8,2;]" ..
 		"list[current_player;main;0,5;8,4;]" ..
 		"listring[current_player;main]" ..
 		"listring[current_name;burn]"
@@ -33,12 +34,12 @@ allow_metadata_inventory_put = function(pos, listname, index, stack, player)
 		local item=stack:get_name()
 		if player:get_player_name()~=meta:get_string("owner") then return 0 end
 		if listname=="tool" and (item=="vexcazer:default" or item=="vexcazer:controler") then
-			minetest.get_node_timer(pos):start(1)
+			minetest.get_node_timer(pos):start(0.1)
 			return 1
 		end
 		local name=stack:get_name()
 		if listname=="burn" and (name~="vexcazer:default" and name~="vexcazer:mod" and name~="vexcazer:admin" and name~="default:mese") then
-			minetest.get_node_timer(pos):start(1)
+			minetest.get_node_timer(pos):start(0.1)
 			return stack:get_count()
 		end
 		return 0
@@ -48,9 +49,9 @@ allow_metadata_inventory_take = function(pos, listname, index, stack, player)
 		if player:get_player_name()~=meta:get_string("owner") then return 0 end
 		return stack:get_count()
 	end,
-allow_metadata_inventory_move = function(pos, from_list, from_index, to_list, to_index, count, player)
-		return 0
-	end,
+--allow_metadata_inventory_move = function(pos, from_list, from_index, to_list, to_index, count, player)
+----		return 0
+--	end,
 can_dig = function(pos, player)
 		local meta=minetest.get_meta(pos)
 		local owner=meta:get_string("owner")
@@ -60,8 +61,16 @@ can_dig = function(pos, player)
 on_timer = function (pos, elapsed)
 	local meta=minetest.get_meta(pos)
 	local inv=meta:get_inventory()
-	local burn=inv:get_stack("burn",1)
+	local burn=inv:get_stack("burn",16)
 	local tool=inv:get_stack("tool",1)
+	local inx=16
+	for i=1,15,1 do
+		if inv:get_stack("burn",i):get_count()>0 then
+			burn=inv:get_stack("burn",i)
+			inx=i
+			break
+		end
+	end
 
 	if burn:get_count()>0 and tool:get_count()==1 then
 		local wear=tool:get_wear()
@@ -81,7 +90,7 @@ on_timer = function (pos, elapsed)
 			if w2>=65534 then w2=65534 end
 			tool:set_wear(w1)
 			inv:set_stack("tool",1,tool)
-			inv:set_stack("burn",1,burn:get_name() .." 1 " .. w2)
+			inv:set_stack("burn",inx,burn:get_name() .." 1 " .. w2)
 			return false
 		end
 
@@ -99,22 +108,22 @@ on_timer = function (pos, elapsed)
 
 		if count>=99 and time*99<=wear then
 			power=time*99
-			inv:set_stack("burn",1,burn:get_name() .." ".. (count-99))
+			inv:set_stack("burn",inx,burn:get_name() .." ".. (count-99))
 		elseif count>=24 and time*24<=wear then
 			power=time*24
-			inv:set_stack("burn",1,burn:get_name() .." ".. (count-24))
+			inv:set_stack("burn",inx,burn:get_name() .." ".. (count-24))
 		elseif count>=10 and time*10<=wear then
 			power=time*10
-			inv:set_stack("burn",1,burn:get_name() .." ".. (count-10))
+			inv:set_stack("burn",inx,burn:get_name() .." ".. (count-10))
 		elseif count>=5 and time*5<=wear then
 			power=time*5
-			inv:set_stack("burn",1,burn:get_name() .." ".. (count-5))
+			inv:set_stack("burn",inx,burn:get_name() .." ".. (count-5))
 		elseif count>=2 and time*2<=wear then
 			power=time*2
-			inv:set_stack("burn",1,burn:get_name() .." ".. (count-2))
+			inv:set_stack("burn",inx,burn:get_name() .." ".. (count-2))
 		elseif count>=1 then
 			power=time
-			inv:set_stack("burn",1,burn:get_name() .." ".. (count-1))
+			inv:set_stack("burn",inx,burn:get_name() .." ".. (count-1))
 		end
 
 		local use=wear-((power)*10)
