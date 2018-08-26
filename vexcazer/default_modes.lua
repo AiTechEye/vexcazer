@@ -206,7 +206,7 @@ vexcazer.registry_mode({
 	on_use = function(itemstack, user, pointed_thing,input)
 		if pointed_thing.type~="node" then return itemstack end
 		local pos=pointed_thing.above
-		if minetest.registered_nodes[minetest.get_node(pointed_thing.under).name].walkable==false and minetest.get_node(pointed_thing.under).name~="air" then
+		if vexcazer.def(pointed_thing.under,"walkable")==false and minetest.get_node(pointed_thing.under).name~="air" then
 			pos=pointed_thing.under
 		end
 		local stack=user:get_inventory():get_stack("main", input.index-1):get_name()
@@ -258,7 +258,7 @@ vexcazer.registry_mode({
 		local plus=1
 		local minus=-1
 		minetest.sound_play("vexcazer_place", {pos = user:get_pos(), gain = 1.0, max_hear_distance =5,})
-		if minetest.registered_nodes[minetest.get_node(pointed_thing.under).name].walkable==false and minetest.get_node(pointed_thing.under).name~="air" then
+		if vexcazer.def(pointed_thing.under,"walkable")==false and minetest.get_node(pointed_thing.under).name~="air" then
 			pos=pointed_thing.under
 		end
 		if pointed_thing.under.y==pointed_thing.above.y then

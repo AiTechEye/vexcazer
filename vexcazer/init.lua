@@ -86,7 +86,6 @@ vexcazer.use=function(itemstack, user, pointed_thing,input)
 
 	if pointed_thing.type=="node" and (not minetest.registered_nodes[minetest.get_node(pointed_thing.under).name]) then
 		vexcazer.unknown_remove(pointed_thing.under)
-		--minetest.set_node(pointed_thing.under, {name="air"})
 		return itemstack
 	end
 
@@ -108,7 +107,11 @@ vexcazer.use=function(itemstack, user, pointed_thing,input)
 	if input.on_place and input.default==false and pointed_thing.type=="node"
 	and user:get_inventory():get_stack("main", input.index-1):get_name()==""
 	and not (vexcazer.registry_modes[input.mode] and vexcazer.registry_modes[input.mode].disallow_damage_on_use) then
-		vexcazer.lazer_damage(pointed_thing.above,input,5)
+		local si=5
+		if input.world then
+			si=15
+		end
+		vexcazer.lazer_damage(pointed_thing.above,input,si)
 		minetest.sound_play("vexcazer_lazer", {pos=pointed_thing.above, gain = 1.0, max_hear_distance = 7,})
 	end
 
@@ -320,7 +323,7 @@ vexcazer.form_update=function(user,index,info)
 			end
 		end
 	end
-	minetest.after((0.1), function(gui)
+	minetest.after(0.1, function(gui)
 		return minetest.show_formspec(name, "vexcazer_gui",gui)
 	end, gui)
 end
@@ -358,7 +361,10 @@ vexcazer.dig=function(pos,input,nolazer)-- pos,input
 	if input.default and def~=nil and (def.drop=="" or def.unbreakable) then return false end
 	if input.admin==false then
 		minetest.node_dig(pos,node,input.user)
-		if minetest.registered_nodes[minetest.get_node(pos).name].walkable==false then
+
+
+
+		if vexcazer.def(pos,"walkable")==false then
 			if nolazer then
 				minetest.set_node(pos, {name="air"})
 			else
@@ -381,7 +387,6 @@ vexcazer.place=function(use,input)--{pos,node={name=name}},input
 		return false
 	end
 	local fn = minetest.registered_nodes[minetest.get_node(use.pos).name]
-
 
 	if fn~=nil and input.default and fn.drop=="" and fn.name:find("maptools:",1)~=nil then return false end
 	if fn==nil  then return false end
@@ -421,12 +426,14 @@ vexcazer.replace=function(use,input)--{pos,stack,replace,invert},input
 	end
 end
 
-vexcazer.lazer_damage=function(pos,input,size)--pos,input,size
-	if minetest.is_protected(pos, input.user_name) then
+vexcazer.lazer_damage=function(pos,input,size)
+	if minetest.is_protected(pos, input.user_name) or not input.user:is_player() then
 		return false
 	end
 	if size==nil then size=1 end
 	local user=input.user
+	local con={}
+
 	for i, ob in pairs(minetest.get_objects_inside_radius(pos, size)) do
 		if not (ob:is_player() and ((vexcazer.pvp==false and input.default)
 		or (ob:get_player_name()==input.user_name))) then
@@ -434,9 +441,27 @@ vexcazer.lazer_damage=function(pos,input,size)--pos,input,size
 			if input.mod or input.default then
 				ob:punch(user,1,{full_punch_interval=1,damage_groups={fleshy=10}})
 			else
-				ob:set_hp(0)
-				ob:punch(ob,1,{full_punch_interval=1,damage_groups={fleshy=9999}})
+				if input.world then
+					if ob:get_luaentity() then
+						table.insert(con,ob:get_pos())
+						ob:remove()
+					else
+						ob:set_hp(0)
+						ob:punch(ob,1,{full_punch_interval=1,damage_groups={fleshy=9999}})
+					end
+				else
+					ob:set_hp(0)
+					ob:punch(ob,1,{full_punch_interval=1,damage_groups={fleshy=9999}})
+				end
 			end	
+		end
+	end
+
+	if #con>0 then
+		for i, pos in ipairs(con) do
+			minetest.after(0.1, function(pos,input,size)
+				vexcazer.lazer_damage(pos,input,size)
+			end, pos,input,size)
 		end
 	end
 end
@@ -508,6 +533,7 @@ vexcazer.def=function(pos,n)
 		return nil
 	elseif not minetest.registered_nodes[minetest.get_node(pos).name] then
 		minetest.remove_node(pos)
+		return nil
 	end
 	return minetest.registered_nodes[minetest.get_node(pos).name][n]
 end
@@ -532,6 +558,8 @@ dofile(minetest.get_modpath("vexcazer") .. "/stuff.lua")
 dofile(minetest.get_modpath("vexcazer") .. "/default_modes.lua")
 dofile(minetest.get_modpath("vexcazer") .. "/craft.lua")
 
+minetest.register_alias("vex_item", "vexcazer:item")
+minetest.register_alias("vex_wo", "vexcazer:world")
 minetest.register_alias("vex_ad", "vexcazer:admin")
 minetest.register_alias("vex_mod", "vexcazer:mod")
 minetest.register_alias("vex_def", "vexcazer:default")
