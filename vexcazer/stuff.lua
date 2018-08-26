@@ -6,6 +6,11 @@ minetest.register_privilege("vexcazer_ad", {
 	description = "Can use admin vexcazer",
 	give_to_singleplayer= false,
 })
+minetest.register_privilege("vexcazer_wo", {
+	description = "Can use world vexcazer",
+	give_to_singleplayer= false,
+})
+
 
 local colors={"FFFFFFFA","FF0000FA","ff009cFA","ff7700FA"}
 local colora={{255,255,255} ,{255,0,0} ,{255,0,170},{255,119,0}}

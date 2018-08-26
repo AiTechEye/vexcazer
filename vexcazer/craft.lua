@@ -12,7 +12,15 @@ minetest.register_node("vexcazer:block", {
 minetest.register_craft({
 	output = "vexcazer:mod",
 	recipe = {{"vexcazer:mod"},},replacements = {{"vexcazer:mod", "vexcazer:controler"}}})
+
 minetest.register_craft({
 	output = "vexcazer:admin",
 	recipe = {{"vexcazer:admin"},},replacements = {{"vexcazer:admin", "vexcazer:controler"}}})
 
+minetest.register_craft({
+	output = "vexcazer:world",
+	recipe = {{"vexcazer:world"}},replacements = {{"vexcazer:world", "vexcazer:controler"}}})
+
+minetest.register_craft({
+	output = "vexcazer:world",
+	recipe = {{"vexcazer:admin","vexcazer:controler"},},replacements = {{"vexcazer:world", "vexcazer:controler"}}})

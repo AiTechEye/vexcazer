@@ -51,16 +51,17 @@ vexcazer.use=function(itemstack, user, pointed_thing,input)
 		return itemstack
 	end
 
-	if (input.mod and minetest.check_player_privs(input.user_name, {vexcazer=true})==false) or (input.admin and minetest.check_player_privs(input.user_name, {vexcazer_ad=true})==false) then
+	if (input.mod and minetest.check_player_privs(input.user_name, {vexcazer=true})==false) or (input.admin and minetest.check_player_privs(input.user_name, {vexcazer_ad=true})==false) or (input.world and minetest.check_player_privs(input.user_name, {vexcazer_wo=true})==false) then
 		local tool=user:get_inventory():get_stack("main", input.index):get_name()
 		itemstack:replace(nil)
 		for i, player in pairs(minetest.get_connected_players()) do
 			local p_n=player:get_player_name()
 			if minetest.check_player_privs(p_n, {vexcazer=true})==true
 			or minetest.check_player_privs(p_n, {vexcazer_ad=true})==true then
-				minetest.chat_send_player(p_n,"<vexcazer> " .. input.user_name .." tryed to use an unallowed tool (" .. tool ..") ...removed from the inventory")
+				minetest.chat_send_player(p_n,"<vexcazer> " .. input.user_name .." tried to use an unallowed tool (" .. tool ..") ...removed from the inventory")
 			end
 		end
+		minetest.log("action", "vexcazer " .. input.user_name .." tried to use an unallowed tool (" .. tool ..") ...removed from the inventory")
 		minetest.chat_send_player(input.user_name,"<vexcazer:> You are unallowed to use this tool")
 		return itemstack
 	end
