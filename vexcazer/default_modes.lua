@@ -91,7 +91,7 @@ vexcazer.registry_mode({
 		end
 		for i=1,input.max_amount,1 do
 			if lazer then
-				vexcazer.lazer_damage(pos,input)	
+				vexcazer.lazer_damage(pos,input)
 			end
 			if count<=0 then return false end
 			if vexcazer.place({pos=pos,node=node},input)==true then
@@ -244,8 +244,6 @@ vexcazer.registry_mode({
 	end
 })
 
-
-
 vexcazer.registry_mode({
 	wear_on_use=1,
 	name="Autoswith",
@@ -378,4 +376,72 @@ vexcazer.registry_mode({
 	on_use = function(itemstack, user, pointed_thing,input)
 		vexcazer.placedigxyz(itemstack, user, pointed_thing,input,2)
 	end,
+})
+
+vexcazer.dp3x3=function(user,pos,input,typ)
+	local dir=user:get_look_dir()
+	local fd=minetest.dir_to_facedir(dir)
+	local stack=user:get_inventory():get_stack("main", input.index-1):get_name()
+	if typ==1 and stack=="" then
+		typ=0
+	end
+
+	if typ==1 then
+		minetest.sound_play("vexcazer_place", {pos =pos, gain = 1.0, max_hear_distance = 5})
+	elseif typ==2 then
+		minetest.sound_play("vexcazer_dig", {pos = pos, gain = 1.0, max_hear_distance = 5,})
+	else
+		minetest.sound_play("vexcazer_lazer", {pos = pos, gain = 1.0, max_hear_distance = 5,})
+	end
+	local x,z,p=0,0,nil
+
+	if fd==0 or fd==2 then
+		x=1
+		y=1
+	else
+		z=1
+		y=1
+	end
+
+	for a=-1,1,1 do
+	for b=-1,1,1 do
+		if math.abs(dir.y)<0.5 then
+			p={x=pos.x+(x*a),y=pos.y+b,z=pos.z+(z*a)}
+		else
+			p={x=pos.x+a,y=pos.y,z=pos.z+b}
+		end
+		if typ==0 then
+			if vexcazer.def(p,"buildable_to") and not minetest.is_protected(p,input.user_name) then
+				minetest.add_node(p,{name=input.lazer})
+				vexcazer.lazer_damage(p,input)
+			end
+		elseif (typ==1 and vexcazer.place({pos=p,node={name=stack}},input)==false) or (typ==2 and vexcazer.dig(p,input)==false) then
+			return false
+		end
+	end
+	end
+end
+
+
+vexcazer.registry_mode({
+	wear_on_use=1,
+	name="PlaceDig 3x3",
+	wear_on_use=1,
+	wear_on_place=1,
+	disallow_damage_on_use=true,
+	info="USE to place\nPlace to dig",
+	on_use = function(itemstack, user, pointed_thing,input)
+		if pointed_thing.type~="node" then
+			return false
+		end
+		vexcazer.dp3x3(user,pointed_thing.above,input,1)
+		return itemstack
+	end,
+	on_place = function(itemstack, user, pointed_thing,input)
+		if  pointed_thing.type~="node" then
+			return false
+		end
+		vexcazer.dp3x3(user,pointed_thing.under,input,2)
+		return itemstack
+	end
 })
