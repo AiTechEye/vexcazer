@@ -293,3 +293,91 @@ vexcazer.registry_mode({
 		return true
 	end
 })
+
+vexcazer.placedigxyz=function(itemstack, user, pointed_thing,input,typ)
+	local pos2=vexcazer.load(input,"PlaceDigxyz")
+	if not pos2 then
+		minetest.chat_send_player(input.user:get_player_name(),"<vexcazer> you have to place first (set a start position)") 
+		return itemstack
+	end
+	local pos1
+	if pointed_thing.type=="node" then
+		pos1=pointed_thing.above
+	else
+		pos1=user:get_pos()
+	end
+	local d=math.floor(vector.distance(pos1,pos2)+0.5)
+
+	minetest.chat_send_player(user:get_player_name(),d) 
+	if d>input.max_amount*3 then
+		minetest.chat_send_player(user:get_player_name(),"<vexcazer> too far, max " .. (input.max_amount*3)) 
+		return itemstack
+	end
+
+	local inv=user:get_inventory()
+	local stack=inv:get_stack("main", input.index-1):get_name()
+	local count=inv:get_stack("main", input.index-1):get_count()
+	local dis=inv:get_stack("main", input.index+1):get_count()
+
+	if count==0 or (typ==1 and (not minetest.registered_nodes[stack] or (not input.admin and not inv:contains_item("main", stack)))) then
+		return
+	elseif dis==0 then
+		dis=1
+	end
+
+	if typ==1 then
+		minetest.sound_play("vexcazer_place", {pos = user:get_pos(), gain = 1.0, max_hear_distance =5,})
+	else
+		minetest.sound_play("diplazer_dig", {pos = user:get_pos(), gain = 1.0, max_hear_distance = 5,})
+	end
+
+	local v = {x = pos1.x - pos2.x, y = pos1.y - pos2.y-1, z = pos1.z - pos2.z}
+	local amount = (v.x ^ 2 + v.y ^ 2 + v.z ^ 2) ^ 0.5
+	local d=math.sqrt((pos1.x-pos2.x)*(pos1.x-pos2.x) + (pos1.y-pos2.y)*(pos1.y-pos2.y)+(pos1.z-pos2.z)*(pos1.z-pos2.z))
+	v.x = (v.x  / amount)*-1
+	v.y = (v.y  / amount)*-1
+	v.z = (v.z  / amount)*-1
+	for i=0,d,dis do
+		local posn={x=pos1.x+(v.x*i),y=pos1.y+(v.y*i),z=pos1.z+(v.z*i)}
+		if typ==1 then
+			vexcazer.place({pos=posn,node={name=stack}},input)
+		elseif typ==2 then
+			vexcazer.dig(posn,input)
+		end
+	end
+end
+
+
+vexcazer.registry_mode({
+	wear_on_use=1,
+	name="Place xyz",
+	wear_on_use=10,
+	wear_on_place=0,
+	info="USE using all stacks and counts on\nthe hotbar until it hits a tool: from left to right",
+	on_place = function(itemstack, user, pointed_thing,input)
+		if pointed_thing.type=="node" then
+			vexcazer.save(input,"PlaceDigxyz",pointed_thing.above,false)
+			return itemstack
+		end
+	end,
+	on_use = function(itemstack, user, pointed_thing,input)
+		vexcazer.placedigxyz(itemstack, user, pointed_thing,input,1)
+	end,
+})
+
+vexcazer.registry_mode({
+	wear_on_use=1,
+	name="Dig xyz",
+	wear_on_use=10,
+	wear_on_place=0,
+	info="USE using all stacks and counts on\nthe hotbar until it hits a tool: from left to right",
+	on_place = function(itemstack, user, pointed_thing,input)
+		if pointed_thing.type=="node" then
+			vexcazer.save(input,"PlaceDigxyz",pointed_thing.above,false)
+			return itemstack
+		end
+	end,
+	on_use = function(itemstack, user, pointed_thing,input)
+		vexcazer.placedigxyz(itemstack, user, pointed_thing,input,2)
+	end,
+})

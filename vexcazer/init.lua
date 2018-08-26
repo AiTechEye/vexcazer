@@ -84,7 +84,8 @@ vexcazer.use=function(itemstack, user, pointed_thing,input)
 	if pointed_thing.type=="node" and (minetest.get_node(pointed_thing.under)==nil or minetest.get_node(pointed_thing.above)==nil) then return itemstack end
 
 	if pointed_thing.type=="node" and (not minetest.registered_nodes[minetest.get_node(pointed_thing.under).name]) then
-		minetest.set_node(pointed_thing.under, {name="air"})
+		vexcazer.unknown_remove(pointed_thing.under)
+		--minetest.set_node(pointed_thing.under, {name="air"})
 		return itemstack
 	end
 
@@ -384,7 +385,7 @@ vexcazer.place=function(use,input)--{pos,node={name=name}},input
 	if fn~=nil and input.default and fn.drop=="" and fn.name:find("maptools:",1)~=nil then return false end
 	if fn==nil  then return false end
 
-	if fn.walkable==false then
+	if (input.default and fn.buildable_to) or ((input.admin or input.mod) and (fn.walkable==false or fn.buildable_to)) then
 		minetest.set_node(use.pos, use.node)
 		if not (input.admin or input.creative) then
 			input.user:get_inventory():remove_item("main", use.node.name)
@@ -499,6 +500,31 @@ vexcazer.wear=function(itemstack,input,wear)
 		itemstack:set_wear(use-1)
 	end
 	return itemstack
+end
+
+vexcazer.def=function(pos,n)
+	if not (pos and pos.x and pos.y and pos.z and n) then
+		return nil
+	elseif not minetest.registered_nodes[minetest.get_node(pos).name] then
+		minetest.remove_node(pos)
+	end
+	return minetest.registered_nodes[minetest.get_node(pos).name][n]
+end
+
+vexcazer.unknown_remove=function(pos)		
+	local a=50
+	for y=-a,a,1 do
+	for x=-a,a,1 do
+	for z=-a,a,1 do
+		local p={x=pos.x+x,y=pos.y+y,z=pos.z+z}
+		local cc=vector.length(vector.new({x=x,y=y,z=z}))/a
+		if not minetest.registered_nodes[minetest.get_node(p).name] then
+			minetest.remove_node(p)
+		end
+	end
+	end
+	end
+
 end
 
 dofile(minetest.get_modpath("vexcazer") .. "/stuff.lua")
