@@ -30,7 +30,7 @@ local vex_gravity=function(itemstack, user, pointed_thing,input)
 		elseif target:get_luaentity() and target:get_luaentity().block
 		and ob:get_luaentity().user:get_player_name()==player_name then
 			local pos=ob:get_pos()
-			if minetest.registered_nodes[minetest.get_node(pos).name].walkable==false
+			if vexcazer.def(pos,"walkable")==false
 			and minetest.is_protected(pos,player_name)==false then
 			if minetest.registered_nodes[target:get_luaentity().drop] then
 				minetest.set_node(pos,{name=target:get_luaentity().drop})
@@ -78,7 +78,7 @@ end
 
 
 vexcazer_gravity_power={}
-vexcazer_gravity_item_time=tonumber(minetest.settings:get("item_entity_ttl"))
+vexcazer_gravity_item_time=tonumber(minetest.setting_get("item_entity_ttl"))
 if not vexcazer_gravity_item_time then
 	vexcazer_gravity_item_time=880
 else
@@ -181,7 +181,7 @@ on_step= function(self, dtime)
 			if self.timer2>self.time2 then self.target:set_detach() end
 		end
 
-		if minetest.registered_nodes[minetest.get_node(npos).name].walkable then
+		if vexcazer.def(npos,"walkable") then
 			self.object:set_velocity({x=0,y=0,z=0})
 			return self
 		end
@@ -443,4 +443,3 @@ vexcazer.registry_mode({
 	on_place=vex_gravity,
 	on_use=vex_gravity,
 })
-

@@ -14,13 +14,12 @@ minetest.register_chatcommand("dropme", {
 		if tp.target:is_player() and tp.target:get_player_name()==name then
 			minetest.chat_send_player(tp.user, "<vexcazer> Your teleport target is droped")
 			vexcazer.teleport[tp.user]=nil
-			minetest.chat_send_player(name, "<vexcazer> You is now droped")
+			minetest.chat_send_player(name, "<vexcazer> You are now droped")
 			return true
 		end
 	end
 	minetest.chat_send_player(name, "This command is only used when someone keep teleporting you")
 end})
-
 
 minetest.register_on_leaveplayer(function(player)
 	local name=player:get_player_name()
@@ -39,18 +38,24 @@ local teleport=function(itemstack, user, pointed_thing,input,object)
 		end
 		local tp2node1=minetest.registered_nodes[minetest.get_node({ x=pos.x, y=pos.y+1, z=pos.z}).name]
 		local tp2node2=minetest.registered_nodes[minetest.get_node({ x=pos.x, y=pos.y+2, z=pos.z}).name]
+
+		if not (tp2node1 and tp2node2) then
+			vexcazer.unknown_remove(pos)
+			return
+		end
+
 		if (tp2node1.walkable==false and tp2node2.walkable==false)  then
 			if input.default and user:get_pos().y<=pos.y then
 				local walkable=0
-				local tp2node1=minetest.registered_nodes[minetest.get_node({ x=pos.x, y=pos.y, z=pos.z}).name].walkable==false
-				local tp2node2=minetest.registered_nodes[minetest.get_node({ x=pos.x+1, y=pos.y, z=pos.z}).name].walkable==false
-				local tp2node3=minetest.registered_nodes[minetest.get_node({ x=pos.x-1, y=pos.y, z=pos.z}).name].walkable==false
-				local tp2node4=minetest.registered_nodes[minetest.get_node({ x=pos.x+1, y=pos.y, z=pos.z+1}).name].walkable==false
-				local tp2node5=minetest.registered_nodes[minetest.get_node({ x=pos.x-1, y=pos.y, z=pos.z-1}).name].walkable==false
-				local tp2node6=minetest.registered_nodes[minetest.get_node({ x=pos.x, y=pos.y, z=pos.z+1}).name].walkable==false
-				local tp2node7=minetest.registered_nodes[minetest.get_node({ x=pos.x, y=pos.y, z=pos.z-1}).name].walkable==false
-				local tp2node8=minetest.registered_nodes[minetest.get_node({ x=pos.x+1, y=pos.y, z=pos.z-1}).name].walkable==false
-				local tp2node9=minetest.registered_nodes[minetest.get_node({ x=pos.x-1, y=pos.y, z=pos.z+1} ).name].walkable==false
+				local tp2node1=vexcazer.def({ x=pos.x, y=pos.y, z=pos.z},"walkable")==false
+				local tp2node2=vexcazer.def({ x=pos.x+1, y=pos.y, z=pos.z},"walkable")==false
+				local tp2node3=vexcazer.def({ x=pos.x-1, y=pos.y, z=pos.z},"walkable")==false
+				local tp2node4=vexcazer.def({ x=pos.x+1, y=pos.y, z=pos.z+1},"walkable")==false
+				local tp2node5=vexcazer.def({ x=pos.x-1, y=pos.y, z=pos.z-1},"walkable")==false
+				local tp2node6=vexcazer.def({ x=pos.x, y=pos.y, z=pos.z+1},"walkable")==false
+				local tp2node7=vexcazer.def({ x=pos.x, y=pos.y, z=pos.z-1},"walkable")==false
+				local tp2node8=vexcazer.def({ x=pos.x+1, y=pos.y, z=pos.z-1},"walkable")==false
+				local tp2node9=vexcazer.def({ x=pos.x-1, y=pos.y, z=pos.z+1} ,"walkable")==false
 				if tp2node1 then walkable=1 end
 				if tp2node2 then walkable=1 end
 				if tp2node3 then walkable=1 end

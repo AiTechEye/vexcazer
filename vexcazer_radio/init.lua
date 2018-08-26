@@ -1,6 +1,5 @@
 local radio=function(itemstack, user, pointed_thing,input,selective)		
 			if pointed_thing.type~="node" then return itemstack end
-			--local pos=pointed_thing.above
 			local pos=pointed_thing.under
 			local dig=input.on_place
 			local plus=1
@@ -10,17 +9,9 @@ local radio=function(itemstack, user, pointed_thing,input,selective)
 			local stack_count=user:get_inventory():get_stack("main", input.index-1):get_count()
 			local stack_count_left=user:get_inventory():get_stack("main", input.index+1):get_count()
 
-
-
-			--if minetest.registered_nodes[minetest.get_node(pointed_thing.under).name].walkable==false and minetest.get_node(pointed_thing.under).name~="air" then
-			--	pos=pointed_thing.under
-			--end
-
-
 			if selective then
 				selective=minetest.get_node(pos).name
 			end
-
 
 			local y=1
 			local dir = minetest.dir_to_facedir(user:get_look_dir())
@@ -33,10 +24,6 @@ local radio=function(itemstack, user, pointed_thing,input,selective)
 
 			if stack_count>input.max_amount*2 then
 				stack_count=input.max_amount*2
-
-				--minetest.sound_play("vexcazer_error", {pos = user:get_pos(), gain = 1.0, max_hear_distance = 10,})
-				--minetest.chat_send_player(input.user_name, "<vexcazer> Maximum count: " .. input.max_amount)
-				--return false
 			end
 
 			local allblocks=(stack_count*stack_count)*stack_count_left

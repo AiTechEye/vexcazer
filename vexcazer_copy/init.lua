@@ -21,7 +21,7 @@ vexcazer_copy.form=function(input,d)
 		"button_exit[2,0;1.5,1;load;Save]" ..
 		"button_exit[4,0;1.5,1;export;Export]"
 	end
-	minetest.after((0.1), function(gui)
+	minetest.after(0.1, function(gui)
 		return minetest.show_formspec(vexcazer_copy.user.user_name, "vexcazer_copy_gui",gui)
 	end, gui)
 end
@@ -73,7 +73,7 @@ vexcazer_copy.nvpa=function(a,p,def)
 	local meta=minetest.get_meta({x=p.x,y=p.y,z=p.z})
 	if meta and meta:get_string("infotext")~="" then return "air" end
 	if a:find("door",1) or a:find("beds",1) or a=="ignore" then return "air" end
-	if def==true and minetest.registered_nodes[a].drop=="" then return "air" end
+	if def==true and minetest.registered_nodes[a] and minetest.registered_nodes[a].drop=="" then return "air" end
 	return a
 end
 
@@ -147,6 +147,12 @@ vexcazer_copy.copying=function(to_do,pos,input,stack_count,nodes2place,stack_cou
 						num3=num3+1
 						if num3>nodes2place[num2].num then num3=1 num2=num2+1 end
 						local fn=minetest.registered_nodes[minetest.get_node(pos3).name]
+
+						if not fn then
+							vexcazer.unknown_remove(pos3)
+							return false
+						end
+
 						if (fn.walkable==true and tnode~="air") or (tnode~="air" and fn.walkable==false and (minetest.get_node_group(fn.name, "unbreakable")==nil or minetest.get_node_group(fn.name, "unbreakable")>0)) then 
 							minetest.chat_send_player(input.user_name, "<vexcazer> You have to clear the area before you can place here (".. stack_count .."x".. stack_count .. "x" .. stack_count .. ")  Found: " .. fn.name)
 							return false

@@ -9,7 +9,7 @@ local massive=function(itemstack, user, pointed_thing,input)
 			local stack_count=user:get_inventory():get_stack("main", input.index-1):get_count()
 			local stack_count_left=user:get_inventory():get_stack("main", input.index+1):get_count()
 
-			if minetest.registered_nodes[minetest.get_node(pointed_thing.under).name].walkable==false and minetest.get_node(pointed_thing.under).name~="air" then
+			if vexcazer.def(pointed_thing.under,"walkable")==false and minetest.get_node(pointed_thing.under).name~="air" then
 				pos=pointed_thing.under
 			end
 
