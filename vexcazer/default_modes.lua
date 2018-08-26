@@ -321,8 +321,6 @@ vexcazer.placedigxyz=function(itemstack, user, pointed_thing,input,typ)
 
 	if count==0 or (typ==1 and (not minetest.registered_nodes[stack] or (not input.admin and not inv:contains_item("main", stack)))) then
 		return
-	elseif dis==0 then
-		dis=1
 	end
 
 	if typ==1 then
@@ -337,7 +335,7 @@ vexcazer.placedigxyz=function(itemstack, user, pointed_thing,input,typ)
 	v.x = (v.x  / amount)*-1
 	v.y = (v.y  / amount)*-1
 	v.z = (v.z  / amount)*-1
-	for i=0,d,dis do
+	for i=0,d,1+dis do
 		local posn={x=pos1.x+(v.x*i),y=pos1.y+(v.y*i),z=pos1.z+(v.z*i)}
 		if typ==1 then
 			vexcazer.place({pos=posn,node={name=stack}},input)
@@ -370,7 +368,7 @@ vexcazer.registry_mode({
 	name="Dig xyz",
 	wear_on_use=10,
 	wear_on_place=0,
-	info="USE using all stacks and counts on\nthe hotbar until it hits a tool: from left to right",
+	info="PLACE to set position\nUSE to dig line withing the distance\nSTACK to left: nodes to place\nSTACK to right, distance bewteen nodes to place",
 	on_place = function(itemstack, user, pointed_thing,input)
 		if pointed_thing.type=="node" then
 			vexcazer.save(input,"PlaceDigxyz",pointed_thing.above,false)
