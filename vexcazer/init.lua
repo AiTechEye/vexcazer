@@ -1,4 +1,14 @@
-vexcazer={enable_default=false,gui="",auto_ad_mod=false,max_amount={default=10,mod=15,admin=30,world=99},wear_use=65535/1000,range={default=10,mod=15,admin=15},registry_modes={},creative=minetest.settings:get("creative_mode"),pvp=minetest.settings:get_bool("enable_pvp")}
+vexcazer={
+	enable_default=false,gui="",
+	auto_ad_mod=false,
+	max_amount={default=10,mod=15,admin=30,world=99},
+	wear_use=65535/1000,
+	range={default=10,mod=15,admin=15},
+	registry_modes={},
+	creative=minetest.settings:get("creative_mode"),
+	pvp=minetest.settings:get_bool("enable_pvp"),
+	gui_user={},
+}
 
 --if minetest.PLAYER_MAX_HP_DEFAULT then
 --	minetest.PLAYER_MAX_HP_DEFAULT=100
@@ -42,8 +52,9 @@ vexcazer.registry_mode=function(a)
 end
 
 vexcazer.use=function(itemstack, user, pointed_thing,input)
-
-	if user:get_luaentity() then
+	if type(user)~="userdata" then
+		return itemstack
+	elseif user:get_luaentity() then
 		local dir=user:get_look_dir()
 		local pos=user:get_pos()
 		pos={x=pos.x+(dir.x)*2,y=pos.y+(dir.y)*2,z=pos.z+(dir.z)*2}
@@ -96,6 +107,7 @@ vexcazer.use=function(itemstack, user, pointed_thing,input)
 	input.mode=vexcazer.set_mode({user=user,add=1,index=input.index,get_mode=true})
 	if input.mode==0 then key.sneak=true end
 	if key.aux1 then
+		vexcazer.gui_user[input.user_name]={user=user,input=input}
 		vexcazer.form_update(user,input.index)
 		return itemstack
 	elseif key.sneak and input.on_use then
@@ -283,7 +295,6 @@ vexcazer.form_update=function(user,index,info)
 		pre="\nPLACE+USE = use even if you pointing at nothing"
 	end
 
-
 	if item1c==0 then item1c="" end
 	if item2c==0 then item2c="" end
 	if info=="" then info=item1 .." " .. item1c .. "\n" .. item2 .." " .. item2c .. "\n\nIf you have a kayboard:\nSNEAK+USE = change modes frontwards\nSNEAK+PLACE = Change modes backwards\nRUN/AUX1+USE = Open this gui" .. pre .."\n\nThe controler is also a powerbank\nPut it in a power generator --> top slot to load it,\nput it under to load a vexcazer" end
@@ -323,16 +334,28 @@ vexcazer.form_update=function(user,index,info)
 			end
 		end
 	end
-	minetest.after(0.1, function(gui)
+	minetest.after(0.1, function(name,gui)
 		return minetest.show_formspec(name, "vexcazer_gui",gui)
-	end, gui)
+	end,name, gui)
 end
 
 minetest.register_on_player_receive_fields(function(player, form, pressed)
 	if form=="vexcazer_gui" then
+
+		if pressed.quit then
+			minetest.after(0.1, function(player)
+				vexcazer.gui_user[player:get_player_name()]=nil
+			end,player)
+		end
+
 		local index=tonumber(pressed.index)
-		for i=1,20,1 do
+		for i=1,30,1 do
 			if pressed["m" .. i]~=nil then
+				if vexcazer.registry_modes[i].on_button then
+					local input=(vexcazer.gui_user[player:get_player_name()] and vexcazer.gui_user[player:get_player_name()].input) or nil
+					vexcazer.registry_modes[i].on_button(player,input)
+					return
+				end
 				return vexcazer.set_mode({index=index,user=player,add=0,set=i})
 			end
 			if pressed["m" .. i .."info"]~=nil then
@@ -340,9 +363,13 @@ minetest.register_on_player_receive_fields(function(player, form, pressed)
 				local adinf=""
 				local deinf=""
 				local item=player:get_inventory():get_stack("main",index):get_name()
-				if item=="vexcazer:mod" and vexcazer.registry_modes[i].info_mod~="" then moinf="\n" .. vexcazer.registry_modes[i].info_mod
-				elseif item=="vexcazer:admin" and vexcazer.registry_modes[i].info_admin~="" then adinf="\n" ..vexcazer.registry_modes[i].info_admin
-				elseif item=="vexcazer:default" and vexcazer.registry_modes[i].info_default~="" then deinf="\n" ..vexcazer.registry_modes[i].info_default end
+				if item=="vexcazer:mod" and vexcazer.registry_modes[i].info_mod~="" then
+					moinf="\n" .. vexcazer.registry_modes[i].info_mod
+				elseif item=="vexcazer:admin" and vexcazer.registry_modes[i].info_admin~="" then
+					adinf="\n" ..vexcazer.registry_modes[i].info_admin
+				elseif item=="vexcazer:default" and vexcazer.registry_modes[i].info_default~="" then
+					deinf="\n" ..vexcazer.registry_modes[i].info_default
+				end
 				return vexcazer.form_update(player,index,vexcazer.registry_modes[i].info .. deinf.. moinf .. adinf)
 			end
 		end
@@ -361,9 +388,6 @@ vexcazer.dig=function(pos,input,nolazer)-- pos,input
 	if input.default and def~=nil and (def.drop=="" or def.unbreakable) then return false end
 	if input.admin==false then
 		minetest.node_dig(pos,node,input.user)
-
-
-
 		if vexcazer.def(pos,"walkable")==false then
 			if nolazer then
 				minetest.set_node(pos, {name="air"})

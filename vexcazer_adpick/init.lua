@@ -33,7 +33,7 @@ vexcazer.registry_mode({
 	disallow_damage_on_use=true,
 	hide_mode_default=true,
 	hide_mode_mod=true,
-	on_use=function(itemstack, user, pointed_thing,input)
+	on_button=function(user,input)
 		local inv=user:get_inventory()
 		for i=0,32,1 do
 			if inv:get_stack("main",i):get_name()=="vexcazer_adpick:pick" then
