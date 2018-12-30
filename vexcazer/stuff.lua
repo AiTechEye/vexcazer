@@ -208,7 +208,7 @@ minetest.register_tool("vexcazer:controler", {
 	description = "Vexcazer controler",
 	range = 10,
 	inventory_image = "vexcazer_controler.png",
-	on_place = function(itemstack, user, pointed_thing)
+	on_use = function(itemstack, user, pointed_thing)
 		for i=1,8,1 do
 			local stack=user:get_inventory():get_stack("main", i):get_name()
 			if string.find(stack,"r:default",7) or string.find(stack,"r:mod",7) or string.find(stack,"r:admin",8) then
@@ -218,7 +218,7 @@ minetest.register_tool("vexcazer:controler", {
 		end
 		return itemstack
 	end,
-	on_use=function(itemstack, user, pointed_thing)
+	on_place=function(itemstack, user, pointed_thing)
 		for i=1,8,1 do
 			local stack=user:get_inventory():get_stack("main", i):get_name()
 			if string.find(stack,"r:default",7) or string.find(stack,"r:mod",7) or string.find(stack,"r:admin",8) then
