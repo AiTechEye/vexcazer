@@ -1,7 +1,7 @@
 # vexcazer
 
-Licenses: CC0
-Version: 9
+License: code: LGPL-2.1, media: CC BY-SA-4.0
+Version: 9.5
 Created by: AiTechEye
 
 All info you need will be fund when you using the tools.
