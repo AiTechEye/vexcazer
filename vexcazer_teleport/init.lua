@@ -1,10 +1,6 @@
 vexcazer.teleport={}
 
--- powersaving mode in 3 steps
---checks 10 times/s 5< away
---checks 1 times/s 10< away
---checks 1 time each 2'th s >10 away
---slow down if something keep same distance it in 20s
+
 
 minetest.register_chatcommand("dropme", {
 	params = "",
@@ -28,9 +24,12 @@ end)
 
 local teleport=function(itemstack, user, pointed_thing,input,object)
 		local pos={}
-		if object and not vexcazer.teleport[input.user_name] then
+		if (object and not vexcazer.teleport[input.user_name])  then
+			return
+		elseif input.default and pointed_thing.type=="node" and minetest.get_item_group(minetest.get_node(pointed_thing.under).name,"unbreakable")~=0 then
 			return
 		end
+
 		if pointed_thing.type=="node" then
 			pos=pointed_thing.under
 		else
