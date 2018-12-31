@@ -1,5 +1,11 @@
 vexcazer_telepad={reg={},tmp={},tuser={}}
 
+-- powersaving mode in 3 steps
+--checks 10 times/s 5< away
+--checks 1 times/s 10< away
+--checks 1 time each 2'th s >10 away
+--slow down if something keep same distance it in 20s
+
 minetest.register_craft({
 	output = "vexcazer_telepad:pad",
 	recipe = {
