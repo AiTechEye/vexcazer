@@ -1,5 +1,6 @@
 vexcazer_extras={
 	nodes={},
+	tmpcns={},
 }
 
 for i,v in ipairs({"FFFFFF","FF0000","ff009c","ff7700","00cbff","00FF00","0000FF","000000","8bb9f9"}) do
@@ -30,7 +31,7 @@ end
 
 for i,v in pairs(minetest.registered_nodes) do
 	local def=minetest.registered_nodes[i]
-	if def and def.mod_origin=="default" and (def.drawtype=="normal" or def.drawtype=="glasslike_framed_optional" or def.drawtype=="glasslike") then
+	if not vexcazer_extras.tmpcns[i] and def and def.mod_origin=="default" and (def.drawtype=="normal" or def.drawtype=="glasslike_framed_optional" or def.drawtype=="glasslike") then
 		local newdef=table.copy(def)
 		local name="vexcazer_extras:unbreakable_" .. v.name:sub(v.name:find(":")+1,v.name:len())
 		newdef.description="Unbreakable " .. def.description
@@ -39,11 +40,11 @@ for i,v in pairs(minetest.registered_nodes) do
 		newdef.stack_max=1000
 		minetest.register_node(name, newdef)
 		table.insert(vexcazer_extras.nodes,name)
+		vexcazer_extras.tmpcns[i]=true
 	end
 end
 
-
-
+vexcazer_extras.tmpcns=nil
 
 vexcazer.registry_mode({
 	name="Unbreakable",
