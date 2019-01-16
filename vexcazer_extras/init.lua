@@ -17,6 +17,7 @@ minetest.register_node("vexcazer_extras:glowing_" ..v, {
 table.insert(vexcazer_extras.nodes,"vexcazer_extras:unbreakable_glowing_" ..v)
 minetest.register_node("vexcazer_extras:unbreakable_glowing_" ..v, {
 	description = "Unbreakable Glowing block",
+	range=15,
 	stack_max=1000,
 	drop="",
 	drawtype="glasslike",
@@ -35,6 +36,7 @@ for i,v in pairs(minetest.registered_nodes) do
 		local newdef=table.copy(def)
 		local name="vexcazer_extras:unbreakable_" .. v.name:sub(v.name:find(":")+1,v.name:len())
 		newdef.description="Unbreakable " .. def.description
+		newdef.range=15
 		newdef.drop=""
 		newdef.groups = {not_in_creative_inventory=1,unbreakable=1}
 		newdef.stack_max=1000
@@ -84,6 +86,7 @@ end)
 table.insert(vexcazer_extras.nodes,"vexcazer_extras:black")
 minetest.register_node("vexcazer_extras:black", {
 	description = "Black",
+	range=15,
 	stack_max=1000,
 	drawtype="glasslike",
 	tiles = {"gui_hb_bg.png^[colorize:#000000"},
@@ -95,6 +98,7 @@ minetest.register_node("vexcazer_extras:black", {
 table.insert(vexcazer_extras.nodes,"vexcazer_extras:collision")
 minetest.register_node("vexcazer_extras:collision", {
 	description = "Collision",
+	range=15,
 	stack_max=1000,
 	drawtype="airlike",
 	drop="",
@@ -108,6 +112,7 @@ if minetest.get_modpath("mesecons") then
 table.insert(vexcazer_extras.nodes,"vexcazer_extras:collision_mese")
 minetest.register_node("vexcazer_extras:collision_mese", {
 	description = "Collision mesecon effected",
+	range=15,
 	stack_max=1000,
 	inventory_image="default_mese_block.png",
 	drawtype="airlike",
@@ -124,6 +129,7 @@ minetest.register_node("vexcazer_extras:collision_mese", {
 })
 minetest.register_node("vexcazer_extras:collision_mese_off", {
 	drawtype="airlike",
+	range=15,
 	drop="",
 	paramtype = "light",
 	sunlight_propagates = true,
@@ -140,6 +146,7 @@ table.insert(vexcazer_extras.nodes,"vexcazer_extras:collision_mese_pointable")
 minetest.register_node("vexcazer_extras:collision_mese_pointable", {
 	description = "Collision mesecon effected pointable",
 	stack_max=1000,
+	range=15,
 	inventory_image="default_mese_block.png",
 	drawtype="airlike",
 	drop="",
@@ -155,6 +162,7 @@ minetest.register_node("vexcazer_extras:collision_mese_pointable", {
 minetest.register_node("vexcazer_extras:collision_mese_off_pointable", {
 	drawtype="airlike",
 	drop="",
+	range=15,
 	paramtype = "light",
 	sunlight_propagates = true,
 	pointable=false,
@@ -171,6 +179,7 @@ end
 table.insert(vexcazer_extras.nodes,"vexcazer_extras:shadow")
 minetest.register_node("vexcazer_extras:shadow", {
 	description = "Shadow",
+	range=15,
 	stack_max=1000,
 	inventory_image="gui_formbg.png",
 	drawtype="airlike",
@@ -182,6 +191,7 @@ minetest.register_node("vexcazer_extras:shadow", {
 table.insert(vexcazer_extras.nodes,"vexcazer_extras:kill")
 minetest.register_node("vexcazer_extras:kill", {
 	description = "Kill",
+	range=15,
 	stack_max=1000,
 	inventory_image="default_lava.png",
 	drawtype="airlike",
@@ -196,6 +206,7 @@ minetest.register_node("vexcazer_extras:kill", {
 table.insert(vexcazer_extras.nodes,"vexcazer_extras:damage")
 minetest.register_node("vexcazer_extras:damage", {
 	description = "Damage",
+	range=15,
 	stack_max=1000,
 	inventory_image="default_lava.png",
 	drawtype="airlike",
@@ -211,6 +222,7 @@ minetest.register_node("vexcazer_extras:damage", {
 table.insert(vexcazer_extras.nodes,"vexcazer_extras:sourceblocking")
 minetest.register_node("vexcazer_extras:sourceblocking", {
 	description = "Sourceblocking",
+	range=15,
 	stack_max=1000,
 	drawtype="nodebox",
 	node_box={
