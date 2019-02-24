@@ -1,5 +1,5 @@
-Licenses: CC0
-Version: 8
+License: code: LGPL-2.1, media: CC BY-SA-4.0
+Version: 9.1
 Created by: AiTechEye
 
 All info you need will be fund when you using the tools.
