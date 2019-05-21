@@ -170,7 +170,7 @@ end)
 
 minetest.register_node("vexcazer_telepad:pad", {
 	description = "Teleport pad",
-	tiles = {"default_meselamp.png","default_steel_block.png"},
+	tiles = {"vexcazer_telepad.png"},
 	groups = {cracky=3},
 	sounds = default.node_sound_stone_defaults(),
 	drawtype="nodebox",
