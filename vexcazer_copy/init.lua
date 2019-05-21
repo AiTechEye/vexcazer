@@ -14,7 +14,7 @@ vexcazer_copy.form=function(input,d)
 	end
 	local gui="" ..
 	"size[8,8]" ..
-	"background[-0.2,-0.2;8.4,8.8;gui_formbg.png]"..
+	"background[-0.2,-0.2;8.4,8.8;vexcazer_background.png]"..
 	"textarea[0,1;8.6,8.6;text;;" .. text .."]" 
 	if d.export==false  then
 		gui=gui ..
