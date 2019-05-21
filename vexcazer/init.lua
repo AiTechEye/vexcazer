@@ -16,6 +16,10 @@ if minetest.PLAYER_MAX_HP_DEFAULT then
 	minetest.PLAYER_MAX_breath_DEFAULT=51
 end
 
+minetest.register_on_leaveplayer(function(player)
+	vexcazer.undo[player:get_player_name()] = nil
+end)
+
 minetest.register_on_joinplayer(function(player)
 	player:set_properties({hp_max=20,breath_max=11})
 	player:set_hp(20)
