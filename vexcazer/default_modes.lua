@@ -1,19 +1,3 @@
-vexcazer.registry_mode({
-	name="Undo",
-	info="USE to Undo the last change",
-	disallow_damage_on_use=true,
-	hide_mode_default=true,
-	hide_mode_mod=true,
-	on_button=function(user,input)
-		if vexcazer.undo[input.user_name] then
-			for pos,n in pairs(vexcazer.undo[input.user_name]) do
-				minetest.set_node(minetest.string_to_pos(pos),{name=n})
-			end
-		end
-		vexcazer.undo[input.user_name] = nil
-	end
-})
-
 vexcazer.bot_use=function(itemstack, user, pos,dir,input)
 		local plus=1
 		local minus=-1
@@ -124,6 +108,24 @@ vexcazer.registry_mode({
 		end
 		if lazer then minetest.chat_send_player(input.user:get_player_name(),"<vexcazer> " ..lazercount) end
 		return itemstack
+	end
+})
+
+vexcazer.registry_mode({
+	name="Undo",
+	info="USE to Undo the last change",
+	disallow_damage_on_use=true,
+	hide_mode_default=true,
+	hide_mode_mod=true,
+	on_button=function(user,input)
+		if vexcazer.undo[input.user_name] then
+			for pos,n in pairs(vexcazer.undo[input.user_name]) do
+				if not minetest.is_protected(pos,input.user_name) then
+					minetest.set_node(minetest.string_to_pos(pos),{name=n})
+				end
+			end
+		end
+		vexcazer.undo[input.user_name] = nil
 	end
 })
 
