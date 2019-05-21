@@ -463,9 +463,9 @@ vexcazer.replace=function(use,input)--{pos,stack,replace,invert},input
 	if input.default and def~=nil and (def.drop=="" or def.unbreakable) then return false end
 
 	if vexcazer.undo[input.user_name] then
-		local nundo = minetest.pos_to_string(pos)
+		local nundo = minetest.pos_to_string(use.pos)
 		if not vexcazer.undo[input.user_name][nundo] then
-			vexcazer.undo[input.user_name][nundo] = minetest.get_node(pos).name
+			vexcazer.undo[input.user_name][nundo] = minetest.get_node(use.pos).name
 		end
 	end
 
