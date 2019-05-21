@@ -6,7 +6,7 @@ minetest.register_craftitem("vexcazer:item", {
 
 minetest.register_node("vexcazer:block", {
 	description = "Block",
-	tiles = {"default_cloud.png^[colorize:#19ffd6FF"},
+	tiles = {"vexcazer_background.png^[colorize:#19ffd6FF"},
 	groups = {not_in_creative_inventory=1}})
 
 minetest.register_craft({
