@@ -1,49 +1,50 @@
 # vexcazer
 
-License: code: LGPL-2.1, media: CC BY-SA-4.0
-Version: 9.5
-Created by: AiTechEye
+License: code: LGPL-2.1, media: CC BY-SA-4.0  
+Version: 9.5  
+Created by: AiTechEye  
 
-All info you need will be fund when you using the tools.
-type /vexcazer in game to see advanced info & version
+All info you need will be fund when you using the tools.  
+type /vexcazer in game to see advanced info & version  
 
-when you using a unused vexcazer:default, and have privs like vexcazer and vexcazer_ad, you will be given mod/admin stuff (if its not in your inventory and if auto_ad_mod is on)
+when you using a unused vexcazer:default, and have privs like vexcazer and vexcazer_ad, you will be given mod/admin stuff (if its not in your inventory and if auto_ad_mod is on)  
 
-vexcazer:admin vex_ad
-vexcazer:mod vex_mod
-vexcazer:default vex_def
-vexcazer:controler vex_con
-vexcazer_adpick:pick vex_adpick
-vexcazer_telepad:pad
-
-
-The modes
-PlaceDig xz:	place/dig xz
-Replace xz:	like PlaceDig, but replacing (2 modes)
-Autoswith:	using blocks from more slots on hotbar at same time.
-Travel1/2:	set position1/2 like a /sethome1/2 (will not works if the postion are protected)
-Teleport:		yourself or an object
-MassivePlaceDig:	place or dig N*N*N
-Gravity control:	(same code from the gravitygun mod)
-Flashlight:	(works in water+turns of in daylight)
-Copy:		(copy basic structures)
-Con:		Dig/Replace blocks that are connected to each other
-SelectiveRadio:	dig/place selected block in radio
-Regen:		regenerate area (same as /deleteblocks)
+vexcazer:admin vex_ad  
+vexcazer:mod vex_mod  
+vexcazer:default vex_def  
+vexcazer:controler vex_con  
+vexcazer_adpick:pick vex_adpick  
+vexcazer_telepad:pad  
 
 
-vexcazer_adpick:		the admin pickaxe [/giveme vex_adpick] (will be given to moderators / admins)
-vexcazer_auto_ad_mod:	enables benefits with give/creative + autoget ad/mod vex when using an unused common-vexcazer [/giveme vex_ad, /giveme vex_mod]
-vexcazer_copy:		copy mode
-vexcazer_flashlight:	flashlight mode
-vexcazer_gravity:		gravitycontrol mode
-vexcazer_massive:		MassivePlaceDig
-vexcazer_powergen:	powergenerator / charger
-vexcazer_teleport:		teleport mode
-vexcazer_travel:		travle modes
-vexcazer_radio		radio/selective radio
-vexcazer_regen		Regen
-vexcazer_con:		connected blocks
+The modes  
+Undo		undo last change
+PlaceDig xz:	place/dig xz  
+Replace xz:	like PlaceDig, but relacing (2 modes)  
+Autoswith:	using blocks from more slots on hotbar at same time.  
+Travel1/2:	set position1/2 like a /sethome1/2 (will not works if the postion are protected)  
+Teleport:		yourself or an object  
+MassivePlaceDig:	place or dig N*N*N  
+Gravity control:	(same code from the gravitygun mod)  
+Flashlight:	(works in water+turns of in daylight)  
+Copy:		(copy basic structures)  
+Con:		Dig/Replace blocks that are connected to each other  
+SelectiveRadio:	dig/place selected block in radio  
+Regen:		regenerate area (same as /deleteblocks)  
+
+
+vexcazer_adpick:	the admin pickaxe [/giveme vex_adpick] (will be given to moderators / admins)  
+vexcazer_auto_ad_mod:	enables benefits with give/creative + autoget ad/mod vex when using an unused common-vexcazer [/giveme vex_ad, /giveme vex_mod]  
+vexcazer_copy:		copy mode  
+vexcazer_flashlight:	flashlight mode  
+vexcazer_gravity:	gravitycontrol mode  
+vexcazer_massive:	MassivePlaceDig  
+vexcazer_powergen:	powergenerator / charger  
+vexcazer_teleport:	teleport mode  
+vexcazer_travel:	travle modes  
+vexcazer_radio		radio/selective radio  
+vexcazer_regen		Regen  (danger)
+vexcazer_con:		connected blocks  
 
 ======For moders:====== (all registry settings and functions can be nil)
 How do i add modes?
