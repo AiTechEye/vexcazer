@@ -46,48 +46,48 @@ vexcazer_radio		radio/selective radio
 vexcazer_regen		Regen  (danger)
 vexcazer_con:		connected blocks  
 
-======For moders:====== (all registry settings and functions can be nil)
-How do i add modes?
-make a new mod/folder, with the depends.txt/vexcazer and init.lua then use this functions
+======For moders:====== (all registry settings and functions can be nil)  
+How do i add modes?  
+make a new mod/folder, with the depends.txt/vexcazer and init.lua then use this functions  
 
 
-vexcazer.registry_mode({
-	name="Mode name",
-	info="Mode info",
-	info_mod="",			--show info for:__
-	info_admin="",
-	info_default="",
-	wear_on_use=1,			--takes power to use (default power amount = 1000)
-	wear_on_place=2
-	hide_mode_mod=false,		-- hide mode for:__
-	hide_mode_admin=false,
-	hide_mode_default=true,
-	disallow_damage_on_use=false	-- disable hurt-on-hit object and place when using this mode
-	on_place=function(itemstack, user, pointed_thing,input) end,
-	on_use=function(itemstack, user, pointed_thing,input) end,
+vexcazer.registry_mode({  
+	name="Mode name",  
+	info="Mode info",  
+	info_mod="",			--show info for:__  
+	info_admin="",  
+	info_default="",  
+	wear_on_use=1,			--takes power to use (default power amount = 1000)  
+	wear_on_place=2  
+	hide_mode_mod=false,		-- hide mode for:__  
+	hide_mode_admin=false,  
+	hide_mode_default=true,  
+	disallow_damage_on_use=false	-- disable hurt-on-hit object and place when using this mode  
+	on_place=function(itemstack, user, pointed_thing,input) end,  
+	on_use=function(itemstack, user, pointed_thing,input) end,  
 })
 
-input={			the input variable
-	mode_name	name of the mode
-	itemstack
-	default=true	the default tool
-	mod=false	moderator like default but 50% default & 50% admin
-	admin=false	admin can destroy everything & no drops
-	mode=1		the mode
-	max_amount	amount of the tool	
-	user		the user
-	user_name	user:get_player_name()
-	creative=true	have creative or give, or creative mode (beta)
-	on_use=true
-	on_place=false
-	index		user:get_wield_index()
-	lazer		vexcazer:lazer1
+input={			the input variable  
+	mode_name	name of the mode  
+	itemstack  
+	default=true	the default tool  
+	mod=false	moderator like default but 50% default & 50% admin  
+	admin=false	admin can destroy everything & no drops  
+	mode=1		the mode  
+	max_amount	amount of the tool  
+	user		the user  
+	user_name	user:get_player_name()  
+	creative=true	have creative or give, or creative mode
+	on_use=true  
+	on_place=false  
+	index		user:get_wield_index()  
+	lazer		vexcazer:lazer1  
 }
 
-vexcazer.place({pos=pos,node={name=name}},input)-- returns true if successful or false
-vexcazer.dig(pos,input,nolazer)-- returns true if successful or false
-vexcazer.replace({pos=pos, stack=stack,replace=replace,invert=invert},input)-- returns true if successful or false, (invert: dig evyerthing except the stack/name, can be nil)
-vexcazer.lazer_damage(pos,input,size)-- makes damage in a area, default is 1, size can be nil 
-vexcazer.round(number)-- round
-vexcazer.save(input,string,value,global) -- saves value in the tool (will use modename.string) (global is used outside the functions / itemstack [global=true])
-vexcazer.load(input,string) -- load saved string in the tool (will use modename.string)
+vexcazer.place({pos=pos,node={name=name}},input)-- returns true if successful or false  
+vexcazer.dig(pos,input,nolazer)-- returns true if successful or false  
+vexcazer.replace({pos=pos, stack=stack,replace=replace,invert=invert},input)-- returns true if successful or false, (invert: dig   evyerthing except the stack/name, can be nil)  
+vexcazer.lazer_damage(pos,input,size)-- makes damage in a area, default is 1, size can be nil  
+vexcazer.round(number)-- round  
+vexcazer.save(input,string,value,global) -- saves value in the tool (will use modename.string) (global is used outside the functions / itemstack [global=true])  
+vexcazer.load(input,string) -- load saved string in the tool (will use modename.string)  
