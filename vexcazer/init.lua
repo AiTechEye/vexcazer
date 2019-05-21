@@ -30,7 +30,7 @@ minetest.register_chatcommand("vexcazer", {
 	params = "",
 	description = "Vexcazer info",
 	func = function(name, param)
-		local version="9.6"
+		local version="10"
 		local info={version=version,modes=0,functions=0,text=""}
 		for i, func in pairs(vexcazer.registry_modes) do
 			info.modes=i
