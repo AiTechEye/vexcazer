@@ -8,6 +8,7 @@ vexcazer={
 	creative=minetest.settings:get("creative_mode"),
 	pvp=minetest.settings:get_bool("enable_pvp"),
 	gui_user={},
+	undo = {},
 }
 
 if minetest.PLAYER_MAX_HP_DEFAULT then
@@ -83,9 +84,9 @@ vexcazer.use=function(itemstack, user, pointed_thing,input)
 		user:set_breath(51)
 	end
 
-	--if input.mod then
-	--	user:set_properties({hp_max=50,breath_max=51})
-	--end
+	if input.mod then
+		user:set_properties({hp_max=50,breath_max=51})
+	end
 
 	if pointed_thing.type=="object" and not (pointed_thing.ref:get_luaentity() or pointed_thing.ref:is_player()) then
 		pointed_thing.ref:set_hp(0)
@@ -171,6 +172,10 @@ vexcazer.use=function(itemstack, user, pointed_thing,input)
 		pointed_thing.under={x=pos.x,y=pos.y-1,z=pos.z}
 		pointed_thing.above={x=pos.x,y=pos.y-0.5,z=pos.z}
 		pointed_thing.type="node"
+	end
+
+	if input.admin and (input.on_use or input.on_place) then
+		vexcazer.undo[input.user_name]={}
 	end
 
 	if input.on_use and vexcazer.registry_modes[input.mode] and vexcazer.registry_modes[input.mode].on_use then
@@ -385,6 +390,14 @@ vexcazer.dig=function(pos,input,nolazer)-- pos,input
 	local def=minetest.registered_nodes[node.name]
 	if node.name=="air" or node.name=="ignore" then return true end
 	if input.default and def~=nil and (def.drop=="" or def.unbreakable) then return false end
+
+	if vexcazer.undo[input.user_name] then
+		local nundo = minetest.pos_to_string(pos)
+		if not vexcazer.undo[input.user_name][nundo] then
+			vexcazer.undo[input.user_name][nundo] = minetest.get_node(pos).name
+		end
+	end
+
 	if input.admin==false then
 		minetest.node_dig(pos,node,input.user)
 		if vexcazer.def(pos,"walkable")==false then
@@ -411,8 +424,16 @@ vexcazer.place=function(use,input)--{pos,node={name=name}},input
 	end
 	local fn = minetest.registered_nodes[minetest.get_node(use.pos).name]
 
-	if fn~=nil and input.default and fn.drop=="" and fn.name:find("maptools:",1)~=nil then return false end
-	if fn==nil  then return false end
+	if not fn or (fn and input.default and fn.drop=="" and fn.name:find("maptools:",1)~=nil) then
+		return false
+	end
+
+	if vexcazer.undo[input.user_name] then
+		local nundo = minetest.pos_to_string(use.pos)
+		if not vexcazer.undo[input.user_name][nundo] then
+			vexcazer.undo[input.user_name][nundo] = minetest.get_node(use.pos).name
+		end
+	end
 
 	if (input.default and fn.buildable_to) or ((input.admin or input.mod) and (fn.walkable==false or fn.buildable_to)) then
 		minetest.set_node(use.pos, use.node)
@@ -436,6 +457,14 @@ vexcazer.replace=function(use,input)--{pos,stack,replace,invert},input
 
 	if use.invert==nil then use.invert=false end
 	if input.default and def~=nil and (def.drop=="" or def.unbreakable) then return false end
+
+	if vexcazer.undo[input.user_name] then
+		local nundo = minetest.pos_to_string(pos)
+		if not vexcazer.undo[input.user_name][nundo] then
+			vexcazer.undo[input.user_name][nundo] = minetest.get_node(pos).name
+		end
+	end
+
 	if (use.invert==false and def.name==use.stack) or (use.invert and def.name~=use.stack) then
 		if input.admin==false then
 			minetest.node_dig(use.pos,{name=def.name},input.user)
