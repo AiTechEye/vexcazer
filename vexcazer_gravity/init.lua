@@ -92,7 +92,7 @@ minetest.register_entity("vexcazer_gravity:power",{
 	collisionbox = {-0.2,-0.2,-0.2, 0.2,0.2,0.2},
 	visual = "sprite",
 	visual_size = {x=1, y=1},
-	textures = {"default_footprint.png"},
+	textures = {"vexcazer_gravity_air.png"},
 	spritediv = {x=1, y=1},
 	is_visible = true,
 	makes_footstep_sound = false,
@@ -300,7 +300,7 @@ function vexcazer_gravity_spawn_block(pos)
 	local t1={}
 	local t2={}
 	local t3={}
-	if not t[1] then self.object:remove() t[1]="default_dirt.png" end
+	if not t[1] then self.object:remove() t[1]="vexcazer_gravity_air.png" end
 	local tx={}
 	t1=t[1]
 	t2=t[1]
