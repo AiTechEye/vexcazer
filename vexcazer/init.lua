@@ -10,16 +10,16 @@ vexcazer={
 	gui_user={},
 }
 
---if minetest.PLAYER_MAX_HP_DEFAULT then
---	minetest.PLAYER_MAX_HP_DEFAULT=100
---	minetest.PLAYER_MAX_breath_DEFAULT=51
---end
+if minetest.PLAYER_MAX_HP_DEFAULT then
+	minetest.PLAYER_MAX_HP_DEFAULT=100
+	minetest.PLAYER_MAX_breath_DEFAULT=51
+end
 
---minetest.register_on_joinplayer(function(player)
---	player:set_properties({hp_max=20,breath_max=11})
---	player:set_hp(20)
---	player:set_breath(11)
---end)
+minetest.register_on_joinplayer(function(player)
+	player:set_properties({hp_max=20,breath_max=11})
+	player:set_hp(20)
+	player:set_breath(11)
+end)
 
 minetest.register_chatcommand("vexcazer", {
 	params = "",
@@ -262,8 +262,7 @@ vexcazer.form_update=function(user,index,info)
 
 	local gui="" ..
 	"size[12,8]" ..
-	"background[-0.2,-0.2;12.4,8.6;gui_formbg.png]"..
-	"background[-0.2,-0.2;5.4,8.6;gui_hb_bg.png]"..
+	"background[-0.2,-0.2;12.4,8.6;vexcazer_background.png]"..
 	"field[5,0;0,0;index;;" .. index.."]"
 
 	local inv = user:get_inventory()

@@ -21,7 +21,7 @@ minetest.register_node("vexcazer:lazer" ..i, {
 	alpha=50,
 	tiles = {"gui_hb_bg.png^[colorize:#" ..  colors[i]},
 	drop="",
-	light_source = default.LIGHT_MAX - 1,
+	light_source = 15,
 	paramtype = "light",
 	walkable=false,
 	sunlight_propagates = true,
