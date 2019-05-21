@@ -8,7 +8,14 @@ minetest.register_craft({
 
 minetest.register_node("vexcazer_powergen:gen", {
 	description = "Power generator",
-	tiles = {"default_meselamp.png^[colorize:#ffffffaa"},
+	paramtype2 = "facedir",
+	tiles = {
+		"vexcazer_powergen_top.png",
+		"vexcazer_powergen_side.png",
+		"vexcazer_powergen_side2.png",
+		"vexcazer_powergen_side.png",
+		"vexcazer_powergen_side.png",
+		"vexcazer_powergen_panel.png"},
 	groups = {dig_immediate = 3},
 	sounds = default.node_sound_stone_defaults(),
 after_place_node = function(pos, placer, itemstack)
@@ -49,9 +56,6 @@ allow_metadata_inventory_take = function(pos, listname, index, stack, player)
 		if player:get_player_name()~=meta:get_string("owner") then return 0 end
 		return stack:get_count()
 	end,
---allow_metadata_inventory_move = function(pos, from_list, from_index, to_list, to_index, count, player)
-----		return 0
---	end,
 can_dig = function(pos, player)
 		local meta=minetest.get_meta(pos)
 		local owner=meta:get_string("owner")
