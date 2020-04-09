@@ -1,622 +1,445 @@
-vexcazer={
-	enable_default=false,gui="",
-	auto_ad_mod=false,
-	max_amount={default=10,mod=15,admin=30,world=99},
-	wear_use=65535/1000,
-	range={default=10,mod=15,admin=15},
-	registry_modes={},
-	creative=minetest.settings:get("creative_mode"),
-	pvp=minetest.settings:get_bool("enable_pvp"),
-	gui_user={},
-	undo = {},
-}
+local vex_gravity=function(itemstack, user, pointed_thing,input)
+	local ob={}
+	local pos=user:get_pos()
+	if user:get_attach() then return itemstack end
 
-if minetest.PLAYER_MAX_HP_DEFAULT then
-	minetest.PLAYER_MAX_HP_DEFAULT=100
-	minetest.PLAYER_MAX_breath_DEFAULT=51
+	if pointed_thing.type=="object" then
+		ob=pointed_thing.ref
+	elseif pointed_thing.type=="node" and minetest.is_protected(pointed_thing.under,user:get_player_name())==false then
+		ob=vexcazer_gravity_spawn_block(pointed_thing.under)
+		if ob.notable then
+			return itemstack
+		end
+	else
+		return itemstack
+	end
+
+	if ob:get_luaentity() and ob:get_luaentity().ggunpower then
+		local player_name=user:get_player_name()
+		local target=ob:get_luaentity().target
+		if ob:get_luaentity().user:get_player_name()==player_name
+		and not (target:get_luaentity() and target:get_luaentity().block) then
+		minetest.sound_play("vexcazer_mode", {pos=pos,max_hear_distance = 5, gain = 1})
+			target:set_detach()
+			if target:get_luaentity() then
+				target:set_velocity({x=0, y=-2, z=0})
+				target:set_acceleration({x=0, y=-8, z=0})
+			end
+
+			return itemstack
+		elseif target:get_luaentity() and target:get_luaentity().block
+		and ob:get_luaentity().user:get_player_name()==player_name then
+			local pos=ob:get_pos()
+			if vexcazer.def(pos,"walkable")==false
+			and minetest.is_protected(pos,player_name)==false then
+			if minetest.registered_nodes[target:get_luaentity().drop] then
+				minetest.set_node(pos,{name=target:get_luaentity().drop})
+			else
+				minetest.add_item(pos, target:get_luaentity().drop)
+			end
+			target:set_detach()
+			target:set_hp(1)
+			target:punch(target, {full_punch_interval=1.0,damage_groups={fleshy=4}}, "default:bronze_pick", nil)
+			minetest.sound_play("vexcazer_mode", {pos=pos,max_hear_distance = 5, gain = 1})
+			end
+
+		end
+
+	if ob:get_luaentity().target:get_luaentity() and ob:get_luaentity().target:get_luaentity().itemstring then
+		ob:get_luaentity().target:set_velocity({x=0, y=-2, z=0})
+		ob:get_luaentity().target:set_acceleration({x=0, y=-8, z=0})
+		minetest.sound_play("vexcazer_mode", {pos=pos,max_hear_distance = 5, gain = 1})
+	end
+	return  itemstack
+	end
+
+	if (not ob:get_attach()) and not (ob:get_luaentity() and ob:get_luaentity().ggunpower) then
+
+		if ob:is_player() and minetest.check_player_privs(input.user_name, {vexcazer=true})==false then
+			minetest.sound_play("vexcazer_error", {pos = user:get_pos(), gain = 1.0, max_hear_distance = 10,})
+			minetest.chat_send_player(input.user_name, "<vexcazer> You is unallowed to hold players")
+			return false
+		end
+
+		vexcazer_gravity_power.item=user:get_wielded_item():get_name():split(":")[2]
+		vexcazer_gravity_power.user=user
+		vexcazer_gravity_power.target=ob
+		local m=minetest.add_entity(ob:get_pos(), "vexcazer_gravity:power")
+		ob:set_attach(m, "", {x=0,y=0,z=0}, {x=0,y=0,z=0})
+		if user:get_player_control().RMB then m:right_click(user)
+
+		else
+			minetest.sound_play("vexcazer_mode", {pos=pos,max_hear_distance = 5, gain = 1})
+		end
+		return  itemstack
+	end
+	return itemstack
 end
 
-minetest.register_on_leaveplayer(function(player)
-	vexcazer.undo[player:get_player_name()] = nil
-end)
 
-minetest.register_on_joinplayer(function(player)
-	player:set_properties({hp_max=20,breath_max=11})
-	player:set_hp(20)
-	player:set_breath(11)
-end)
+vexcazer_gravity_power={}
+vexcazer_gravity_item_time=tonumber(minetest.setting_get("item_entity_ttl"))
+if not vexcazer_gravity_item_time then
+	vexcazer_gravity_item_time=880
+else
+	vexcazer_gravity_item_time=vexcazer_gravity_item_time-20
+end
 
-minetest.register_chatcommand("vexcazer", {
-	params = "",
-	description = "Vexcazer info",
-	func = function(name, param)
-		local version="10"
-		local info={version=version,modes=0,functions=0,text=""}
-		for i, func in pairs(vexcazer.registry_modes) do
-			info.modes=i
-			if func.on_place then info.functions=info.functions+1 end
-			if func.on_use then info.functions=info.functions+1 end
+minetest.register_entity("vexcazer_gravity:power",{
+	hp_max = 100,
+	physical = true,
+	weight = 0,
+	collisionbox = {-0.2,-0.2,-0.2, 0.2,0.2,0.2},
+	visual = "sprite",
+	visual_size = {x=1, y=1},
+	textures = {"vexcazer_gravity_air.png"},
+	spritediv = {x=1, y=1},
+	is_visible = true,
+	makes_footstep_sound = false,
+	automatic_rotate = false,
+	timer=0,
+	time=0.2,
+	timer2=0,
+	time2=10,
+	ggunpower=1,
+	throw=0,
+	throw_timer=0,
+	throw_time=4,
+	dir={},
+	opos=0,
+	damage=1,
+	ignore=0,
+on_activate=function(self, staticdata)
+		if vexcazer_gravity_power.user then
+			self.target=vexcazer_gravity_power.target
+			self.user=vexcazer_gravity_power.user
+			self.item=vexcazer_gravity_power.item
+			vexcazer_gravity_power={}
+			local c=self.target:get_properties().collisionbox
+			if c~=nil then
+				self.object:set_properties({collisionbox=c})
+				local a1=c[1]+c[2]+c[3]
+				local a2=c[4]+c[5]+c[6]
+				if a1<a2 then a1=a2 end
+				self.damage=a1*10
+			end
+		else
+			self.object:remove()
 		end
-		minetest.chat_send_player(name, "<Vexcazer> Version: ".. info.version .." Modes: " .. info.modes .. " Functions: ".. info.functions)
+	end,
+on_rightclick=function(self, clicker)
+		if clicker:get_player_name()==self.user:get_player_name() then
+			local item=self.user:get_wielded_item():get_name()
+			if item=="vexcazer:mod" or item=="vexcazer:admin" or item=="vexcazer:world" then
+			local dir=self.user:get_look_dir()
+			self.dir=dir
+			if self.target:get_luaentity() and self.target:get_luaentity().itemstring then
+				self.target:get_luaentity().age=vexcazer_gravity_item_time
+			end
+			local pos=self.object:get_pos()
+			self.time=10
+			self.object:set_velocity({x=dir.x*45, y=dir.y*45, z=dir.z*45})
+			self.throw=1
+			self.time=0
+			if self.item~="gun3" then
+				minetest.sound_play("vexcazer_lazer", {pos=pos,max_hear_distance = 7, gain = 1})
+			end
+			end
+		end
+		end,
+on_step= function(self, dtime)
+	self.timer=self.timer+dtime
+	if self.timer<self.time then return self end
+	self.timer=0
+
+	if self.throw==0 then
+		if self.user:get_wielded_item():get_name():find(self.item,8)==nil then
+			self.target:set_detach()
+			self.target:set_velocity({x=0, y=-2, z=0})
+			self.target:set_acceleration({x=0, y=-8, z=0})
+		end
+		if self.target==nil or (not self.target:get_attach()) then
+			self.object:set_hp(0)
+			self.object:punch(self.object, {full_punch_interval=1.0,damage_groups={fleshy=4}}, "default:bronze_pick", nil)
+			if self.sound then minetest.sound_stop(self.sound) end
+		end
+		local d=4
+		local pos = self.user:get_pos()
+		if pos==nil then return self end
+
+		if self.user:get_hp()<1 then self.target:set_detach() end
+
+		local dir = self.user:get_look_dir()
+		local npos={x=pos.x+(dir.x*d), y=pos.y+(dir.y*d)+1.6, z=pos.z+(dir.z*d)}
+
+		local opos=npos.x+npos.y+npos.z
+		if opos~=self.opos then
+			self.opos=opos
+			self.timer2=0
+		else
+		self.timer2=self.timer2+dtime
+			if self.timer2>self.time2 then self.target:set_detach() end
+		end
+
+		if vexcazer.def(npos,"walkable") then
+			self.object:set_velocity({x=0,y=0,z=0})
+			return self
+		end
+		if self.autoglitchfix then -- becaouse model sizes more then 200kb making it glitch >_<
+			self.object:move_to(npos)
+			return self
+		else
+			local ta=self.target:get_pos()
+			if ta==nil then return self end
+			local v={x = (npos.x - ta.x)*4, y = (npos.y - ta.y)*4, z = (npos.z - ta.z)*4}
+			if npos.y - ta.y>2 or npos.y - ta.y<-3 then
+				self.time=0.1
+				self.autoglitchfix=1
+				self.object:set_velocity({x=0,y=0,z=0})
+				return self
+			end
+			self.object:set_velocity(v)
+		end
+	else
+		self.throw_timer=self.throw_timer+dtime
+		local v=self.object:get_velocity()
+		local pos=self.object:get_pos()
+		for i, ob in pairs(minetest.get_objects_inside_radius(pos, 1.7)) do
+			if ((ob:is_player() and ob:get_player_name()~=self.user:get_player_name()) or (ob:get_luaentity() and ob:get_luaentity().ggunpower==nil)) and (not ob:get_attach()) then
+				local igpos=ob:get_pos()
+				igpos=math.floor(igpos.x+igpos.y+igpos.z)
+				if igpos~=self.ignore then
+					self.ignore=igpos
+					ob:punch(ob,1,{full_punch_interval=1,damage_groups={fleshy=4}})
+					ob:set_hp(ob:get_hp()-self.damage)
+					if (not ob:get_attach()) and (ob:get_hp()>0 or ob:is_player()) then
+						local c=ob:get_properties().collisionbox
+						if c~=nil then
+							local a1=c[1]+c[2]+c[3]
+							local a2=c[4]+c[5]+c[6]
+							if a1<a2 then a1=a2 end
+							if a1<=self.damage then
+							local objpos=ob:get_pos()
+								vexcazer_gravity_power.item=self.item
+								vexcazer_gravity_power.user=self.user
+								vexcazer_gravity_power.target=ob
+								local m=minetest.add_entity(objpos, "vexcazer_gravity:power")
+								ob:set_attach(m, "", {x=0,y=0,z=0}, {x=0,y=0,z=0})
+								local v=self.object:get_velocity()
+								if minetest.get_node({x=objpos.x,y=objpos.y-1,z=objpos.z}).name~="air" then
+									m:move_to({x=objpos.x,y=objpos.y+0.2,z=objpos.z})
+								end
+								local sv={x=v.x*0.9,y=v.y*0.9,z=v.z*0.9}
+								self.object:set_velocity(sv)
+								m:right_click(self.user)
+							end
+						end
+					end
+				end
+			end
+		end
+		if (v.x>-25 and v.x<25)
+		and (v.y>-25 and v.y<25)
+		and (v.z>-25 and v.z<25) then
+			if self.target:get_luaentity() and self.target:get_luaentity().itemstring then
+				self.target:get_luaentity().age=vexcazer_gravity_item_time
+			end
+			self.target:set_detach()
+			self.target:set_hp(self.target:get_hp()-self.damage)
+			self.target:punch(self.target,1,{full_punch_interval=1,damage_groups={fleshy=4}})
+			self.throw_timer=self.throw_time
+		end
+		if self.throw_timer>=self.throw_time then
+			self.target:set_detach()
+			if self.target~=nil and self.target:get_luaentity() then
+				self.target:set_velocity({x=self.dir.x*25, y=self.dir.y*25, z=self.dir.z*25})
+				self.target:set_acceleration({x=0, y=-8, z=0})
+			end
+			self.object:set_hp(0)
+			self.object:punch(self.object,1,{full_punch_interval=1,damage_groups={fleshy=4}})
+		end
 	end
+	return self
+	end,
 })
 
-vexcazer.registry_mode=function(a)
-	a.name= a.name or "Mode"
-	a.info= a.info or ""
-	a.info_mod= a.info_mod or ""
-	a.info_admin= a.info_admin or ""
-	a.info_default= a.info_default or ""
-	a.hide_mode_mod= a.hide_mode_mod or false
-	a.hide_mode_admin= a.hide_mode_admin or false
-	a.hide_mode_default= a.hide_mode_default or false
-	a.wear_on_use= a.wear_on_use or 0
-	a.wear_on_place= a.wear_on_place or 0
-	a.disallow_damage_on_use= a.disallow_damage_on_use or false
-	table.insert(vexcazer.registry_modes,a)
-end
+function vexcazer_gravity_spawn_block(pos)
+	local node=minetest.registered_nodes[minetest.get_node(pos).name]
+	if node==nil then return {notable=true} end
+	if minetest.get_node_group(node.name, "unbreakable")>0 or (
+	minetest.get_node_group(node.name, "fleshy")==0 and
+	minetest.get_node_group(node.name, "choppy")==0 and
+	minetest.get_node_group(node.name, "bendy")==0 and
+	minetest.get_node_group(node.name, "cracky")==0 and
+	minetest.get_node_group(node.name, "crumbly")==0 and
+	minetest.get_node_group(node.name, "snappy")==0 and
+	minetest.get_node_group(node.name, "oddly_breakable_by_hand")==0 and
+	minetest.get_node_group(node.name, "dig_immediate")==0)
+	then return {notable=true} end
 
-vexcazer.use=function(itemstack, user, pointed_thing,input)
-	if type(user)~="userdata" then
-		return itemstack
-	elseif user:get_luaentity() then
-		local dir=user:get_look_dir()
-		local pos=user:get_pos()
-		pos={x=pos.x+(dir.x)*2,y=pos.y+(dir.y)*2,z=pos.z+(dir.z)*2}
-		vexcazer.bot_use(itemstack, user, pos,dir,input)
-		return itemstack
-	end
+	if minetest.get_meta(pos):get_string("infotext")~="" then return {notable=true} end
 
-	if (input.mod and minetest.check_player_privs(input.user_name, {vexcazer=true})==false) or (input.admin and minetest.check_player_privs(input.user_name, {vexcazer_ad=true})==false) or (input.world and minetest.check_player_privs(input.user_name, {vexcazer_wo=true})==false) then
-		local tool=user:get_inventory():get_stack("main", input.index):get_name()
-		itemstack:replace(nil)
-		for i, player in pairs(minetest.get_connected_players()) do
-			local p_n=player:get_player_name()
-			if minetest.check_player_privs(p_n, {vexcazer=true})==true
-			or minetest.check_player_privs(p_n, {vexcazer_ad=true})==true then
-				minetest.chat_send_player(p_n,"<vexcazer> " .. input.user_name .." tried to use an unallowed tool (" .. tool ..") ...removed from the inventory")
-			end
-		end
-		minetest.log("action", "vexcazer " .. input.user_name .." tried to use an unallowed tool (" .. tool ..") ...removed from the inventory")
-		minetest.chat_send_player(input.user_name,"<vexcazer:> You are unallowed to use this tool")
-		return itemstack
-	end
+	vexcazer_gravity_power={drop="",new=1}
+	minetest.set_node(pos, {name = "air"})
 
-	if input.admin then
-		user:set_properties({hp_max=100,breath_max=51})
-		user:set_hp(100)
-		user:set_breath(51)
-	end
-
-	if input.mod then
-		user:set_properties({hp_max=50,breath_max=51})
-	end
-
-	if pointed_thing.type=="object" and not (pointed_thing.ref:get_luaentity() or pointed_thing.ref:is_player()) then
-		pointed_thing.ref:set_hp(0)
-		pointed_thing.ref:punch(pointed_thing.ref,1,{full_punch_interval=1,damage_groups={fleshy=9999}})
-		return itemstack
-	 end
-
-	if pointed_thing.type=="node" and (minetest.get_node(pointed_thing.under)==nil or minetest.get_node(pointed_thing.above)==nil) then return itemstack end
-
-	if pointed_thing.type=="node" and (not minetest.registered_nodes[minetest.get_node(pointed_thing.under).name]) then
-		vexcazer.unknown_remove(pointed_thing.under)
-		return itemstack
-	end
-
-	local key=user:get_player_control()
-	input.itemstack=itemstack
-
-
-	input.mode=vexcazer.set_mode({user=user,add=1,index=input.index,get_mode=true})
-	if input.mode==0 then key.sneak=true end
-	if key.aux1 then
-		vexcazer.gui_user[input.user_name]={user=user,input=input}
-		vexcazer.form_update(user,input.index)
-		return itemstack
-	elseif key.sneak and input.on_use then
-		return vexcazer.set_mode({user=user,add=1,index=input.index},itemstack)
-	elseif key.sneak and input.on_place then
-		return vexcazer.set_mode({user=user,add=-1,index=input.index},itemstack)
-	end
-
-	if input.on_place and input.default==false and pointed_thing.type=="node"
-	and user:get_inventory():get_stack("main", input.index-1):get_name()==""
-	and not (vexcazer.registry_modes[input.mode] and vexcazer.registry_modes[input.mode].disallow_damage_on_use) then
-		local si=5
-		if input.world then
-			si=15
-		end
-		vexcazer.lazer_damage(pointed_thing.above,input,si)
-		minetest.sound_play("vexcazer_lazer", {pos=pointed_thing.above, gain = 1.0, max_hear_distance = 7,})
-	end
-
-	if pointed_thing.type=="object" and not (input.on_use and vexcazer.registry_modes[input.mode] and vexcazer.registry_modes[input.mode].disallow_damage_on_use) then
-		local ob=pointed_thing.ref
-		if ob:is_player() then
-			local is_mod=minetest.check_player_privs(ob:get_player_name(), {vexcazer=true})==true
-			local is_admin=minetest.check_player_privs(ob:get_player_name(), {vexcazer_ad=true})==true
-			if not(ob:is_player() and ((vexcazer.pvp==false and input.default) or (ob:get_player_name()==input.user_name))
-			or (input.default and (is_mod or is_admin))) then
-				if input.mod or input.default then
-					if input.mod then ob:set_hp(ob:get_hp()-10) end
-					ob:punch(user,1,{full_punch_interval=1,damage_groups={fleshy=10}})
-				else
-					ob:set_hp(0)
-					ob:punch(user,1,{full_punch_interval=1,damage_groups={fleshy=9999}})
-				end
-				minetest.sound_play("vexcazer_lazer", {pos =ob:get_pos(), gain = 1.0, max_hear_distance = 7,})	
-			end
+	if node.drop=="" or node.drop==nil then 
+		vexcazer_gravity_power.drop=node.name
+	elseif node.drop.items and node.drop.items[1].items then
+		if minetest.registered_nodes[node.drop.items[2].items[1]] then
+			vexcazer_gravity_power.drop=node.drop.items[2].items[1]
+		elseif minetest.registered_nodes[node.drop.items[1].items[1]] then
+			vexcazer_gravity_power.drop=node.drop
 		else
-			if input.mod or input.default then
-				ob:punch(ob,1,{full_punch_interval=1,damage_groups={fleshy=10}})
-				minetest.sound_play("vexcazer_lazer", {pos =ob:get_pos(), gain = 1.0, max_hear_distance = 7,})
-			else
-				minetest.sound_play("vexcazer_lazer", {pos =ob:get_pos(), gain = 1.0, max_hear_distance = 10,})
-
-				if input.world and ob:get_luaentity() then
-					ob:remove()
-				else
-					ob:set_hp(0)
-					ob:punch(ob,1,{full_punch_interval=1,damage_groups={fleshy=9999}})
-				end
-			end
-		end
-	end
-
-	if vexcazer.auto_ad_mod==true and (vexcazer.creative=="true" or minetest.check_player_privs(input.user_name, {give=true})==true or minetest.check_player_privs(input.user_name, {creative=true})==true) then
-		input.creative=true
-	else
-		input.creative=false
-	end
-
-	if key.LMB and key.RMB and (input.admin or input.mod) then
-		local pos=user:get_pos()
-		pointed_thing.under={x=pos.x,y=pos.y-1,z=pos.z}
-		pointed_thing.above={x=pos.x,y=pos.y-0.5,z=pos.z}
-		pointed_thing.type="node"
-	end
-
-	if input.admin and (input.on_use or input.on_place) then
-		vexcazer.undo[input.user_name]={}
-	end
-
-	if input.on_use and vexcazer.registry_modes[input.mode] and vexcazer.registry_modes[input.mode].on_use then
-		if not vexcazer.wear(itemstack,input,vexcazer.registry_modes[input.mode].wear_on_use) then return itemstack end
-		input.mode_name=vexcazer.registry_modes[input.mode].name
-		return vexcazer.registry_modes[input.mode].on_use(itemstack, user, pointed_thing,input)
-	elseif input.on_place and vexcazer.registry_modes[input.mode] and vexcazer.registry_modes[input.mode].on_place then
-		if not vexcazer.wear(itemstack,input,vexcazer.registry_modes[input.mode].wear_on_place) then return itemstack end
-		input.mode_name=vexcazer.registry_modes[input.mode].name
-		return vexcazer.registry_modes[input.mode].on_place(itemstack, user, pointed_thing,input)
-	else
-		input.set=1
-		vexcazer.set_mode(input,itemstack)
-	end
-	return itemstack
-end
-
-
-vexcazer.set_mode=function(input,itstack) -- {user,add,set,index}
-	if input.index==nil then return false end
-	local itemstack=input.user:get_inventory():get_stack("main", input.index)
-	local item=itemstack:to_table()
-	local meta=minetest.deserialize(item.metadata)
-	if input.get_mode and meta~=nil then
-		return meta.mode
-	elseif input.get_mode and meta==nil then
-		return 0
-	end
-	local wear=itemstack:get_wear()
-
-	if meta==nil then
-		meta={mode=0}
-		vexcazer.new_user(input.user,input.index)
-	end
-	local mode=(meta.mode)
-
-	if input.set then
-		mode=input.set
-	else
-		mode=mode+input.add
-	end
-
-	if vexcazer.registry_modes[mode]==nil and input.add<=0 then
-		mode=#vexcazer.registry_modes
-	end
-	if vexcazer.registry_modes[mode]==nil then mode=1 end
-	meta.mode=mode
-	item.metadata=minetest.serialize(meta)
-	item.meta=minetest.serialize(meta)
-	item.wear=wear
-	minetest.sound_play("vexcazer_mode", {pos=input.user:get_pos(), gain = 2.0, max_hear_distance = 3,})
-	minetest.chat_send_player(input.user:get_player_name(),"Mode" .. mode ..": " .. vexcazer.registry_modes[mode].name)
-	if itstack then
-		itstack:replace(item)
-		return itemstack
-	else
-		input.user:get_inventory():set_stack("main", input.index,item)
-	end
-end
-
-vexcazer.save=function(input,string,value,global)
-	local item=input.itemstack:to_table()
-	local meta = minetest.deserialize(item["metadata"])
-	if meta==nil then meta={} end
-	meta[input.mode_name .."."..string]=value
-	item.metadata=minetest.serialize(meta)
-	item.meta=minetest.serialize(meta)
-	if global then
-		input.user:get_inventory():set_stack("main", input.index,item)
-	else
-		input.itemstack:replace(item)
-	end
-
-
-end
-
-vexcazer.load=function(input,string)
-	local item=input.itemstack:to_table()
-	local meta = minetest.deserialize(item["metadata"])
-	if meta==nil then return nil end 
-	return meta[input.mode_name .."."..string]
-end
-
-vexcazer.form_update=function(user,index,info)
-
-	local name=user:get_player_name()
-	local pre=""
-	if info==nil then info="" end
-
-	local gui="" ..
-	"size[12,8]" ..
-	"background[-0.2,-0.2;12.4,8.6;vexcazer_background.png]"..
-	"field[5,0;0,0;index;;" .. index.."]"
-
-	local inv = user:get_inventory()
-	for i=1,3,1 do 
-		inv:set_stack(name.."_vexcazer_inv",i,nil)
-	end
-	local item1=inv:get_stack("main",index-1):get_name()
-	local item2=inv:get_stack("main",index+1):get_name()
-	local item1c=inv:get_stack("main",index-1):get_count()
-	local item2c=inv:get_stack("main",index+1):get_count()
-	local tool=inv:get_stack("main",index):get_name()
-	local vex={default=false,mod=false,admin=false}
-
-	if tool=="vexcazer:default" then
-		vex.default=true
-		if item1c>vexcazer.max_amount.default then item1c=vexcazer.max_amount.default end
-		if item2c>vexcazer.max_amount.default then item2c=vexcazer.max_amount.default end
-	elseif tool=="vexcazer:mod" then
-		vex.mod=true
-		if item1c>vexcazer.max_amount.mod then item1c=vexcazer.max_amount.mod end
-		if item2c>vexcazer.max_amount.mod then item2c=vexcazer.max_amount.mod end
-	elseif tool=="vexcazer:admin" then
-		vex.admin=true
-		if item1c>vexcazer.max_amount.admin then item1c=vexcazer.max_amount.admin end
-		if item2c>vexcazer.max_amount.admin then item2c=vexcazer.max_amount.admin end
-	end
-
-	if vex.admin or vex.mod then
-		pre="\nPLACE+USE = use even if you pointing at nothing"
-	end
-
-	if item1c==0 then item1c="" end
-	if item2c==0 then item2c="" end
-	if info=="" then info=item1 .." " .. item1c .. "\n" .. item2 .." " .. item2c .. "\n\nIf you have a kayboard:\nSNEAK+USE = change modes frontwards\nSNEAK+PLACE = Change modes backwards\nRUN/AUX1+USE = Open this gui" .. pre .."\n\nThe controler is also a powerbank\nPut it in a power generator --> top slot to load it,\nput it under to load a vexcazer" end
-
-	if item1~="" and minetest.registered_nodes[item1] then
-		item1="vexcazer:block ".. item1c
-	elseif  item1~="" and minetest.registered_nodes[item1]==nil then
-		item1="vexcazer:item ".. item1c
-	end
-	if item2~="" and minetest.registered_nodes[item2] then
-		item2="vexcazer:block ".. item2c
-	elseif  item2~="" and minetest.registered_nodes[item2]==nil then
-		item2="vexcazer:item " ..item2c
-	end
-
-	gui=gui .."item_image_button[7,0;1,1;".. item1 ..";name1;]"
-	.."item_image_button[8,0;1,1;".. tool..";name2;]"
-	.."item_image_button[9,0;1,1;" .. item2 ..";name3;]"
-
-	gui=gui .. "label[5.1,2;" .. info .."]" 
-
-	local mb_posx=-0.1
-	local mb_posy=-0.2
-
-	for i, func in pairs(vexcazer.registry_modes) do
-
-		if not (vex.default and func.hide_mode_default)
-		and not (vex.mod and func.hide_mode_mod)
-		and not (vex.admin and func.hide_mode_admin) then
-			gui=gui .."button_exit[" ..mb_posx .."," .. mb_posy.. "; 2.5,1;m" .. i .."; ".. func.name.. " " .. i .. "]"
-			gui=gui .."button_exit[" ..(mb_posx+2.2) .."," .. mb_posy.. "; 0.6,1;m" .. i .."info;?]"
-
-			mb_posx=mb_posx+2.6
-			if mb_posx>=5 then
-				mb_posy=mb_posy+0.6
-				mb_posx=-0.1
-			end
-		end
-	end
-	minetest.after(0.1, function(name,gui)
-		return minetest.show_formspec(name, "vexcazer_gui",gui)
-	end,name, gui)
-end
-
-minetest.register_on_player_receive_fields(function(player, form, pressed)
-	if form=="vexcazer_gui" then
-
-		if pressed.quit then
-			minetest.after(0.1, function(player)
-				vexcazer.gui_user[player:get_player_name()]=nil
-			end,player)
-		end
-
-		local index=tonumber(pressed.index)
-		for i=1,30,1 do
-			if pressed["m" .. i]~=nil then
-				if vexcazer.registry_modes[i].on_button then
-					local input=(vexcazer.gui_user[player:get_player_name()] and vexcazer.gui_user[player:get_player_name()].input) or nil
-					vexcazer.registry_modes[i].on_button(player,input)
-					return
-				end
-				return vexcazer.set_mode({index=index,user=player,add=0,set=i})
-			end
-			if pressed["m" .. i .."info"]~=nil then
-				local moinf=""
-				local adinf=""
-				local deinf=""
-				local item=player:get_inventory():get_stack("main",index):get_name()
-				if item=="vexcazer:mod" and vexcazer.registry_modes[i].info_mod~="" then
-					moinf="\n" .. vexcazer.registry_modes[i].info_mod
-				elseif item=="vexcazer:admin" and vexcazer.registry_modes[i].info_admin~="" then
-					adinf="\n" ..vexcazer.registry_modes[i].info_admin
-				elseif item=="vexcazer:default" and vexcazer.registry_modes[i].info_default~="" then
-					deinf="\n" ..vexcazer.registry_modes[i].info_default
-				end
-				return vexcazer.form_update(player,index,vexcazer.registry_modes[i].info .. deinf.. moinf .. adinf)
-			end
-		end
-	end
-end)
-
-vexcazer.dig=function(pos,input,nolazer)-- pos,input
-	if pos==nil then return false end
-	if minetest.is_protected(pos,input.user_name) then
-		minetest.chat_send_player(input.user_name, pos.x .."," .. pos.y .."," .. pos.z ..", is protected.")
-		return true
-	end
-	local node=minetest.get_node(pos)
-	local def=minetest.registered_nodes[node.name]
-	if node.name=="air" or node.name=="ignore" then return true end
-	if input.default and def~=nil and (def.drop=="" or def.unbreakable) then return false end
-
-	if vexcazer.undo[input.user_name] then
-		local nundo = minetest.pos_to_string(pos)
-		if not vexcazer.undo[input.user_name][nundo] then
-			vexcazer.undo[input.user_name][nundo] = minetest.get_node(pos).name
-		end
-	end
-
-	if input.admin==false then
-		minetest.node_dig(pos,node,input.user)
-		if vexcazer.def(pos,"walkable")==false then
-			if nolazer then
-				minetest.set_node(pos, {name="air"})
-			else
-				minetest.set_node(pos, {name=input.lazer})
-			end
+			vexcazer_gravity_power.drop=node.drop
 		end
 	else
-		if nolazer then
-			minetest.set_node(pos, {name="air"})
-		else
-			minetest.set_node(pos, {name=input.lazer})
+		vexcazer_gravity_power.drop=node.drop
+	end
+
+	local t=node.tiles
+	local t1={}
+	local t2={}
+	local t3={}
+	if not t[1] then self.object:remove() t[1]="vexcazer_gravity_air.png" end
+	local tx={}
+	t1=t[1]
+	t2=t[1]
+	t3=t[1]
+	if t[2] then t2=t[2] t3=t[2] end
+	if t[3] and t[3].name then t3=t[3].name
+	elseif t[3] then t3=t[3]
+	end
+	tx[1]=t1
+	tx[2]=t2
+	tx[3]=t3
+	tx[4]=t3
+	tx[5]=t3
+	tx[6]=t3
+
+	local type=node.drawtype
+	if type=="nodebox" and node.node_box then
+		if node.node_box.type=="regular" or
+		node.node_box.type=="wallmounted" or
+		node.node_box.type=="fixed" then type="normal" end
+	end
+	if type~="plantlike" and type~="signlike" and type~="raillike" and type~="torchlike" and type~="mesh" and type~="fencelike" then type="normal" end
+	if node.name:find("slab_",1) or node.name:find("_slab",1) or node.name:find("sign",1) or node.name=="default:snow" then type="slab" end
+	if node.name:find("stair_",1) or node.name:find("_stair",1) then type="stair" end
+
+	local m=minetest.add_entity(pos, "vexcazer_gravity:block")
+	m:set_properties({textures = tx})
+
+	if type=="plantlike" or type=="torchlike" then m:set_properties({visual="sprite"}) end
+	if type=="signlike" or type=="raillike" then m:set_properties({visual="upright_sprite"}) end
+	if type=="mesh" then
+		local npos={}
+		npos.x=node.wield_scale.x*2
+		npos.y=node.wield_scale.y*2
+		npos.z=node.wield_scale.z*2
+		m:set_properties({collisionbox=node.selection_box.fixed})
+		m:set_properties({visual="mesh"})
+		m:set_properties({mesh=node.mesh})
+		m:set_properties({visual_size=npos})
+		colision=node.selection_box.fixed
+	end
+	if type=="fencelike" then
+		local npos={}
+		npos.x=node.wield_scale.x*0.3
+		npos.y=node.wield_scale.y*1
+		npos.z=node.wield_scale.z*0.3
+		m:set_properties({visual_size=npos})
+	end
+
+	if type=="stair" then
+		local npos={}
+		npos.x=node.wield_scale.x*10
+		npos.y=node.wield_scale.y*10
+		npos.z=node.wield_scale.z*10
+		m:set_properties({visual="mesh"})
+		m:set_properties({mesh="stairs_stair.obj"})
+		m:set_properties({visual_size=npos})
+	end
+	if type=="slab" then
+		local npos={}
+		npos.x=node.wield_scale.x*1
+		npos.y=node.wield_scale.y*0.4
+		npos.z=node.wield_scale.z*1
+		m:set_properties({visual_size=npos})
+	end
+	if node.selection_box.wall_side then
+		m:set_properties({collisionbox=node.selection_box.wall_side})
+	end
+	if node.selection_box.fixed then
+		local colbox=node.selection_box.fixed
+		if  colbox and tonumber(colbox[1])~=nil then -- and colbox[1][1]==nil
+			m:set_properties({collisionbox={colbox[1],colbox[2],colbox[3],colbox[4],colbox[5]+0.4,colbox[6]}})
+		elseif colbox and colbox[1]~=nil and colbox[1][1]~=nil then
+			m:set_properties({collisionbox={colbox[1][1],colbox[1][2],colbox[1][3],colbox[1][4],colbox[1][5]+0.4,colbox[1][6]}})
 		end
 	end
-	return true
+	return m
 end
 
-vexcazer.place=function(use,input)--{pos,node={name=name}},input
-	if minetest.is_protected(use.pos, input.user:get_player_name()) then
-		minetest.chat_send_player(input.user_name, use.pos.x .."," .. use.pos.y .."," .. use.pos.z ..", is protected.")
-		return false
-	end
-	local fn = minetest.registered_nodes[minetest.get_node(use.pos).name]
 
-	if not fn or (fn and input.default and fn.drop=="" and fn.name:find("maptools:",1)~=nil) then
-		return false
-	end
-
-	if vexcazer.undo[input.user_name] then
-		local nundo = minetest.pos_to_string(use.pos)
-		if not vexcazer.undo[input.user_name][nundo] then
-			vexcazer.undo[input.user_name][nundo] = minetest.get_node(use.pos).name
+minetest.register_entity("vexcazer_gravity:block",{
+	hp_max = 30,
+	physical = true,
+	weight = 0,
+	collisionbox = {-0.5,-0.5,-0.5, 0.5,0.5,0.5},
+	visual = "cube",
+	visual_size = {x=1, y=1},
+	textures = {},
+	spritediv = {x=1, y=1},
+	initial_sprite_basepos = {x=0, y=0},
+	is_visible = true,
+	makes_footstep_sound = false,
+	automatic_rotate = false,
+on_punch=function(self, puncher, time_from_last_punch, tool_capabilities, dir)
+		local pos=self.object:get_pos()
+		if self.object:get_hp()==1 then
+			self.drop=""
+			self.timer=1
+			self.timer2=10
+		elseif pos~=nil and self.object:get_hp()<=0 and self.drop~="" then
+			local it=minetest.add_item(pos, self.drop)
+			it:get_luaentity().age=vexcazer_gravity_item_time
+			return self
 		end
-	end
-
-	if (input.default and fn.buildable_to) or ((input.admin or input.mod) and (fn.walkable==false or fn.buildable_to)) then
-		minetest.set_node(use.pos, use.node)
-		if not (input.admin or input.creative) then
-			input.user:get_inventory():remove_item("main", use.node.name)
-			return true
-		end
-		return true
-	else
-		return false
-	end
-end
-
-
-vexcazer.replace=function(use,input)--{pos,stack,replace,invert},input
-	if minetest.is_protected(use.pos, input.user:get_player_name()) then
-		minetest.chat_send_player(input.user_name, use.pos.x .."," .. use.pos.y .."," .. use.pos.z ..", is protected.")
-		return false
-	end
-	local def=minetest.get_node(use.pos)
-
-	if use.invert==nil then use.invert=false end
-	if input.default and def~=nil and (def.drop=="" or def.unbreakable) then return false end
-
-	if vexcazer.undo[input.user_name] then
-		local nundo = minetest.pos_to_string(use.pos)
-		if not vexcazer.undo[input.user_name][nundo] then
-			vexcazer.undo[input.user_name][nundo] = minetest.get_node(use.pos).name
-		end
-	end
-
-	if (use.invert==false and def.name==use.stack) or (use.invert and def.name~=use.stack) then
-		if input.admin==false then
-			minetest.node_dig(use.pos,{name=def.name},input.user)
-			if not input.creative then input.user:get_inventory():remove_item("main", use.replace) end
-		end
-			minetest.set_node(use.pos, {name=use.replace})
-		
-		return true
-	else
-		return true
-	end
-end
-
-vexcazer.lazer_damage=function(pos,input,size)
-	if minetest.is_protected(pos, input.user_name) or not input.user:is_player() then
-		return false
-	end
-	if size==nil then size=1 end
-	local user=input.user
-	local con={}
-
-	for i, ob in pairs(minetest.get_objects_inside_radius(pos, size)) do
-		if not (ob:is_player() and ((vexcazer.pvp==false and input.default)
-		or (ob:get_player_name()==input.user_name))) then
-			if type(user)=="table" then user=ob end
-			if input.mod or input.default then
-				ob:punch(user,1,{full_punch_interval=1,damage_groups={fleshy=10}})
-			else
-				if input.world then
-					if ob:get_luaentity() then
-						table.insert(con,ob:get_pos())
-						ob:remove()
-					else
-						ob:set_hp(0)
-						ob:punch(ob,1,{full_punch_interval=1,damage_groups={fleshy=9999}})
-					end
-				else
-					ob:set_hp(0)
-					ob:punch(ob,1,{full_punch_interval=1,damage_groups={fleshy=9999}})
-				end
-			end	
-		end
-	end
-
-	if #con>0 then
-		for i, pos in ipairs(con) do
-			minetest.after(0.1, function(pos,input,size)
-				vexcazer.lazer_damage(pos,input,size)
-			end, pos,input,size)
-		end
-	end
-end
-
-vexcazer.round=function(a)
-	return math.floor(a+ 0.5)
-end
-
-vexcazer.new_user=function(user,index)
-	local inv=user:get_inventory()
-	local name=user:get_player_name()
-	local have_controler=false
-	for i=0,32,1 do
-		if inv:get_stack("main",i):get_name()=="vexcazer:controler" then
-			have_controler=true
-			break
-		end
-	end
-	if not have_controler then 
-		inv:add_item("main", ItemStack("vexcazer:controler 1 65534"))
-		minetest.chat_send_player(name,"<vexcazer> Use the controler to change modes or open the gui on the tool")
-	end
-
-	minetest.chat_send_player(name,"<vexcazer> You can craft the tool with mese-crystal / fragments to reload")
-
-
-	if vexcazer.auto_ad_mod==false then return end
-
-
-	if inv:get_stack("main",index):get_name()=="vexcazer:default" then
-		if minetest.check_player_privs(name, {vexcazer_ad=true})==true then
-			for i=0,32,1 do
-				if inv:get_stack("main",i):get_name()=="vexcazer:admin" then
-					return
-				end
-			end
-			inv:add_item("main", "vexcazer:admin")
-			if minetest.get_modpath("vexcazer_adpick")~=nil then inv:add_item("main","vexcazer_adpick:pick") end
-			minetest.chat_send_player(name,"<vexcazer> vexcazer for admins added to your inventory")
-		elseif minetest.check_player_privs(name, {vexcazer=true})==true then
-			for i=0,32,1 do
-				if inv:get_stack("main",i):get_name()=="vexcazer:mod" then
-					return
-				end
-			end
-			inv:add_item("main","vexcazer:mod")
-			if minetest.get_modpath("vexcazer_adpick")~=nil then inv:add_item("main","vexcazer_adpick:pick") end
-			minetest.chat_send_player(name,"<vexcazer> vexcazer for moderators added to your inventory")
-		end
-	end
-end
-
-vexcazer.wear=function(itemstack,input,wear)
-	if input.default and input.creative==false then
-		local use=itemstack:get_wear()+(vexcazer.wear_use*wear)
-		if use>=65536 then
-			minetest.chat_send_player(input.user_name,"<vexcazer> The power is end, and I need to be reloaded")
+	end,
+on_activate=function(self, staticdata)
+		if not vexcazer_gravity_power.new then
+			self.object:remove()
 			return false
-		elseif use<0 then
-			use=1
 		end
-		itemstack:set_wear(use-1)
-	end
-	return itemstack
-end
-
-vexcazer.def=function(pos,n)
-	if not (pos and pos.x and pos.y and pos.z and n) then
-		return nil
-	elseif not minetest.registered_nodes[minetest.get_node(pos).name] then
-		minetest.remove_node(pos)
-		return nil
-	end
-	return minetest.registered_nodes[minetest.get_node(pos).name][n]
-end
-
-vexcazer.unknown_remove=function(pos)		
-	local a=50
-	for y=-a,a,1 do
-	for x=-a,a,1 do
-	for z=-a,a,1 do
-		local p={x=pos.x+x,y=pos.y+y,z=pos.z+z}
-		local cc=vector.length(vector.new({x=x,y=y,z=z}))/a
-		if not minetest.registered_nodes[minetest.get_node(p).name] then
-			minetest.remove_node(p)
+		self.drop=vexcazer_gravity_power.drop
+		vexcazer_gravity_power={}
+	end,
+on_step= function(self, dtime)
+		self.timer=self.timer+dtime
+		if self.timer<0.5  then return self end
+		if self.object:get_attach() then return self end
+		self.timer=0
+		self.timer2=self.timer2+1
+		local pos=self.object:get_pos()
+		if self.timer2>10 then
+			self.object:set_hp(0)
+			self.object:punch(self.object,1,{full_punch_interval=1,damage_groups={fleshy=4}})
+			return self
 		end
-	end
-	end
-	end
+	end,
+	timer=0,
+	timer2=0,
+	drop="",
+	block=1,
+})
 
-end
-
-dofile(minetest.get_modpath("vexcazer") .. "/stuff.lua")
-dofile(minetest.get_modpath("vexcazer") .. "/default_modes.lua")
-dofile(minetest.get_modpath("vexcazer") .. "/craft.lua")
-
-minetest.register_alias("vex_item", "vexcazer:item")
-minetest.register_alias("vex_wo", "vexcazer:world")
-minetest.register_alias("vex_ad", "vexcazer:admin")
-minetest.register_alias("vex_mod", "vexcazer:mod")
-minetest.register_alias("vex_def", "vexcazer:default")
-minetest.register_alias("vex_con", "vexcazer:controler")
+vexcazer.registry_mode({
+	name="Gravity control",
+	info="USE on an object or block = hold\nUSE on a held object = drop, or place if its a block",
+	info_mod="\nPLACE the object to throw it away",
+	info_admin="\nPLACE the object to throw it away",
+	disallow_damage_on_use=true,
+	wear_on_use=2,
+	on_place=vex_gravity,
+	on_use=vex_gravity,
+})
