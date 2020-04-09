@@ -130,7 +130,7 @@ on_activate=function(self, staticdata)
 on_rightclick=function(self, clicker)
 		if clicker:get_player_name()==self.user:get_player_name() then
 			local item=self.user:get_wielded_item():get_name()
-			if item=="vexcazer:mod" or item=="vexcazer:admin" then
+			if item=="vexcazer:mod" or item=="vexcazer:admin" or item=="vexcazer:world" then
 			local dir=self.user:get_look_dir()
 			self.dir=dir
 			if self.target:get_luaentity() and self.target:get_luaentity().itemstring then
